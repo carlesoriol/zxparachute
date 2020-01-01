@@ -1,7 +1,6 @@
 # zxparachute
 
 ZX Spectrum Parachute is a conversion of the nintendo all time classic parachute gameandwatch to ZX Spectrum 48k.
-
 This conversion is done just for fun.
 
 
