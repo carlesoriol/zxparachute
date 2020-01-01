@@ -19,11 +19,15 @@ Open z80 or tap file in any ZX Spectrum, FPGA machine or emulator you like.
 
 Assembly with Retro Virtual Machine assembler inside a ZX Spectrum 48k.
 
-'''asm parachute.asm'''
+```
+asm parachute.asm
+```
 
 and run at 32768.
 
-'''RANDOMIZE USR 32768'''
+```
+RANDOMIZE USR 32768
+```
 
 ## Thanks
 
