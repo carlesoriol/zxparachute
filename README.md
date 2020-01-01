@@ -6,9 +6,13 @@ This conversion is done just for fun.
 Carles Oriol - Barcelona 2020
 carlesoriol@gmail.com
 
-## Installation
+## Play
 
 Open z80 or tap file in any ZX Spectrum, FPGA machine or emulator you like.
+
+* Keys: **1 to 5** - Move **left** 
+* Keys: **6 to 0** - Move **right**
+
 
 ## Assemble
 
