@@ -1,6 +1,7 @@
 # zxparachute
 
 ZX Spectrum Parachute is a conversion of the nintendo all time classic parachute gameandwatch to ZX Spectrum 48k.
+
 This conversion is done just for fun.
 
 
@@ -31,10 +32,10 @@ RANDOMIZE USR 32768
 
 ## Thanks
 
-Thanks to Nintendo for this amazing game that wasted so many hours in my childhood.
-Thanks to Sinclair Computers and to Sir Clive Sinclair for creating the ZX Spectrum that gave me my hobby, my passion and my career.
-Thanks to the people of retro virtual machine for creating a so enjoyable environment to develop.
-Thanks to my Nurieta for everything else in my live.
+* Thanks to Nintendo for this amazing game that wasted so many hours in my childhood.
+* Thanks to Sinclair Computers and to Sir Clive Sinclair for creating the ZX Spectrum that gave me my hobby, my passion and my career.
+* Thanks to the people of retro virtual machine for creating a so enjoyable environment to develop.
+* Thanks to my Nurieta for everything else in my life.
 
 ## Contributing
 Just made me know if you want to publish any changes or if you have any ideas
