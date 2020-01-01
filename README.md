@@ -15,7 +15,7 @@ Open z80 or tap file in any ZX Spectrum, FPGA machine or emulator you like.
 * Keys: **6 to 0** - Move **right**
 
 
-## Assemble
+## Assembly
 
 Assembly with Retro Virtual Machine assembler inside a ZX Spectrum 48k.
 
