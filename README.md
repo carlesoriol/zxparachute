@@ -5,7 +5,6 @@ This conversion is done just for fun.
 
 
 Carles Oriol - Barcelona 2020
-
 carlesoriol@gmail.com
 
 ## Play
@@ -29,11 +28,8 @@ and run at 32768.
 ## Thanks
 
 Thanks to Nintendo for this amazing game that wasted so many hours in my childhood.
-
 Thanks to Sinclair Computers and to Sir Clive Sinclair for creating the ZX Spectrum that gave me my hobby, my passion and my career.
-
 Thanks to the people of retro virtual machine for creating a so enjoyable environment to develop.
-
 Thanks to my Nurieta for everything else in my live.
 
 ## Contributing
