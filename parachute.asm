@@ -1,7 +1,7 @@
 
 				
-include "../libs/screen_macros.asm"
-include "../libs/key_macros.asm"
+include "libs/screen_macros.asm"
+include "libs/key_macros.asm"
 
 				org 	0x4000
 
@@ -675,4 +675,4 @@ include "parachute_math.asm"
 fons:
 incbin 	"parachute_screen.scr"
 
-include '../libs/interrupt_lib.asm' ; always include last line or before org	
+include 'libs/interrupt_lib.asm' ; always include last line or before org	
