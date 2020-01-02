@@ -91,3 +91,26 @@ update_time:	ld a, (hl)
 				ld (hl),a
 				ret
 				
+
+; swap memory contents
+; hl = 1st pointer, de = 2nd pointer, bc = bytes to swap
+; modifies af, af', hl, de, bc
+swap_memory: 			
+				ld a, (hl)
+				ex af, af'
+				ld a, (de)
+				ld (hl), a
+				ex af, af'
+				ld (de), a
+				
+				inc hl
+				inc de
+				
+				dec c
+				jr nz, swap_memory
+				djnz swap_memory
+				
+				ret
+
+
+

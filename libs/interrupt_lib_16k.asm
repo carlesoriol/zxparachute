@@ -34,7 +34,7 @@ setInterruptTo:
 
 
        			
-		ORG           $FCFC
+		ORG           $7C7C
 IM2Routine:   
 		push af             ; preserve registers.
 		push bc
@@ -50,12 +50,11 @@ interruptcallfunction:
 		pop bc
 		pop af
 		ei                  ; always re-enable interrupts before returning.
-		reti                ; done.
-		ret
+		reti                ; done.		
 		
 
 ; Make sure this is on a 256 byte boundary
-              ORG           $F000
+              ORG           $7d00
 VectorTable:
               defs          258
 

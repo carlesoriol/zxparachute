@@ -60,31 +60,30 @@ parachute5_step	defb	0
 
 falling_parachutes	defb	0
 
-				org 0x8000
+				org 0x4000
+fons:
+incbin 	"parachute_screen.scr"	
+
+				org 0x5ccb
 main:				
+				ld sp, 0x8000
+				
 				xor a				; posem el marge negre
 				out	(#fe), a ;					
 				ld ($5C48), a	
 
-				ld de, attributes_start		; blit image
-				ld hl, logo
-				ld bc, attributes_size
-				ldir				
-				
 				ld de, screen_start		; blit image
 				ld hl, fons
-				ld bc, screen_size 
+				ld bc, full_screen_size 
 				ldir
+						
+				call swap_logo
 								
 				call waitnokey
 				call waitkey			
 				call waitnokey
 				
-				ld de, attributes_start	; blit game attribs
-				ld hl, fons + screen_size
-				ld bc, attributes_size 
-				ldir
-				
+				call swap_logo
 								
 				call showallandhideforfun
 												
@@ -155,11 +154,14 @@ main:
 				jp	z, main_loop
 				
 		end_main_return:
-				im 1
+				rst 0			; reset on exit
 				
-				ld a,7
-				out	(#fe), a ;					
-				ld ($5C48), a				
+swap_logo: 
+				ld hl, attributes_start
+				ld de, logo
+				ld bc, attributes_size
+				
+				call swap_memory
 				
 				ret
 
@@ -281,34 +283,8 @@ start_live:
 				
 start_game:
 				call hideAll
-
-				ld hl, img_monkey
-				call showImage_item
-				
-				ld hl, img_heli
-				call showImage_item				
-				ld hl, img_heli_blade_front
-				call showImage_item
-				ld hl, img_heli_blade_back
-				call showImage_item
-				
-				ld hl, img_am
-				call showImage_item
-				ld hl, img_digit_1				
-				call showImage_item
-				ld hl, img_digit_2	
-				call showImage_item
-				ld hl, img_digit_separator
-				call showImage_item
-				ld hl, img_digit_3				
-				call showImage_item
-				ld hl, img_digit_4				
-				call showImage_item
-				ld hl, img_gamea
-				call showImage_item
-								
-				ld hl, img_boat_middle
-				call showImage_item
+				ld de, start_game_images
+				call show_imagelist
 								
 				ld a, 1
 				ld (boatpos), a
@@ -331,6 +307,34 @@ start_game:
 				
 				call start_live
 				ret
+
+start_game_images: 
+				defw 	img_monkey
+				defw	img_heli, img_heli_blade_front
+				defw	img_am, img_digit_1, img_digit_2, img_digit_3, img_digit_4
+				defw	img_gamea, img_boat_middle
+				defw	0
+					
+				
+; de pointer to image list
+show_imagelist:
+				ld a, (de)
+				ld l, a
+				inc de
+				ld a, (de)
+				ld h, a
+				inc de
+				
+				or l		; if hl = 0 return
+				ret z
+				
+				push de
+				call showImage_item
+				pop de
+				
+				jr show_imagelist
+				
+				
 		
 man_lost:
 				call man_overboard
@@ -658,10 +662,7 @@ update_time_int:
 				ld a, 1
 				ld (second_update), a
 
-				ret
-				
-
-
+				ret				
 
 include "parachute_lcd.asm"
 include "parachute_keys.asm"
@@ -672,7 +673,7 @@ include "parachute_screen_lib.asm"
 include "parachute_digits.asm"
 include "parachute_math.asm"
 
-fons:
-incbin 	"parachute_screen.scr"
 
-include 'libs/interrupt_lib.asm' ; always include last line or before org	
+include 'libs/interrupt_lib_16k.asm' ; always include last line or before org	
+
+run main
