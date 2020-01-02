@@ -46,19 +46,33 @@ max_parachutes:	defb	0
 				defb	0
 				defb	0
 
+parachute0_pos	defb	0
 parachute1_pos	defb	0
 parachute2_pos	defb	0
 parachute3_pos	defb	0
 parachute4_pos	defb	0
 parachute5_pos	defb	0
+parachute6_pos	defb	0
+parachute7_pos	defb	0
+parachute8_pos	defb	0
+parachute9_pos	defb	0
 
+parachute0_step	defb	0
 parachute1_step	defb	0
 parachute2_step	defb	0
 parachute3_step	defb	0
 parachute4_step	defb	0
 parachute5_step	defb	0
+parachute6_step	defb	0
+parachute7_step	defb	0
+parachute8_step	defb	0
+parachute9_step	defb	0
+
 
 falling_parachutes	defb	0
+
+gamea_highcore	defw 0
+gameb_highcore	defw 0
 
 				org 0x4000
 fons:
@@ -67,14 +81,18 @@ incbin 	"parachute_screen.scr"
 				org 0x5ccb
 main:				
 				ld sp, 0x8000
+
+				im 1
 				
 				xor a				; posem el marge negre
 				out	(#fe), a ;					
 				ld ($5C48), a	
 
-				ld de, screen_start		; blit image
-				ld hl, fons
-				ld bc, full_screen_size 
+				ld hl, screen_start		; clear vars
+				ld de, screen_start+1
+				ld bc, 31
+				xor a
+				ld (hl), a				
 				ldir
 						
 				call swap_logo
@@ -112,6 +130,7 @@ main:
 					
 					call heli_blades	
 					call shark_move
+					call clock_keys
 									
 			main_no_step:	
 			
@@ -165,52 +184,6 @@ swap_logo:
 				
 				ret
 
-update_clock_dots:
-				ld a, (time_50s)
-				ld hl, img_digit_separator
-				cp 25				
-				jp c, showImage_item
-				jp hideImage_item
-				
-				
-update_clock:
-				ld a, (time_second)
-				ld d, a
-				ld e, 10
-				call div_d_e		; reminder in a
-				
-				ld bc,#1850
-				call pinta_digit
-				
-				ld a, (time_second)
-				ld d, a
-				ld e, 10
-				call div_d_e		; quotient in d 
-				ld a, d
-				
-				ld bc,#1840
-				call pinta_digit
-				
-				ld a, (time_minute)
-				ld d, a
-				ld e, 10
-				call div_d_e		; reminder in a
-				
-				ld bc,#1828
-				call pinta_digit
-				
-				ld a, (time_minute)
-				ld d, a
-				ld e, 10
-				call div_d_e		; quotient in d 
-				ld a, d
-				
-				ld bc,#1818
-				call pinta_digit
-				
-				
-				ret
-				
 
 
 get_free_parachute:
@@ -672,8 +645,10 @@ include "parachute_logo.asm"
 include "parachute_screen_lib.asm"
 include "parachute_digits.asm"
 include "parachute_math.asm"
+include "parachute_clock.asm"
 
 
 include 'libs/interrupt_lib_16k.asm' ; always include last line or before org	
 
 run main
+

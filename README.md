@@ -12,8 +12,17 @@ carlesoriol@gmail.com
 
 Open z80 or tap file in any ZX Spectrum, FPGA machine or emulator you like.
 
-* Keys: **1 to 5** - Move **left** 
-* Keys: **6 to 0** - Move **right**
+* Keys: **1 to 5** - Move **left**  (left arrow = 5)
+* Keys: **6 to 0** - Move **right** (right arrow = 8)
+
+* Key: **H** - Increments Hour
+* Key: **M** - Increments Minutes
+
+* Key: **A** - Select game A
+* Key: **B** - Select game B
+
+* Key: **C** - Restart game 
+* Key: **X** - Quits game (reset)
 
 
 ## Assembly
