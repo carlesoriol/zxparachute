@@ -46,30 +46,8 @@ max_parachutes:	defb	0
 				defb	0
 				defb	0
 
-parachute0_pos	defb	0
-parachute1_pos	defb	0
-parachute2_pos	defb	0
-parachute3_pos	defb	0
-parachute4_pos	defb	0
-parachute5_pos	defb	0
-parachute6_pos	defb	0
-parachute7_pos	defb	0
-parachute8_pos	defb	0
-parachute9_pos	defb	0
 
-parachute0_step	defb	0
-parachute1_step	defb	0
-parachute2_step	defb	0
-parachute3_step	defb	0
-parachute4_step	defb	0
-parachute5_step	defb	0
-parachute6_step	defb	0
-parachute7_step	defb	0
-parachute8_step	defb	0
-parachute9_step	defb	0
-
-
-falling_parachutes	defb	0
+parachute_step_index:	defb	0
 
 gamea_highcore	defw 0
 gameb_highcore	defw 0
@@ -94,29 +72,19 @@ main:
 				xor a
 				ld (hl), a				
 				ldir
-						
+
 				call swap_logo
-								
 				call waitnokey
-				call waitkey			
-				
+				call waitkey
+				call waitnokey
 				call swap_logo
-				
-				
+																
+				call showallandhideforfun
 				call hideAll
 				call update_screen
 				
-				
-				call showAll
-				call update_screen
-				
-				
-				call hideAll
-				call update_screen
 												
-				; call showallandhideforfun
-												
-				ld a, 7
+				ld a, 8
 				ld (step_speed), a
 				
 				call update_clock
@@ -139,9 +107,11 @@ main:
 					ld (step), a
 					; every step
 					
+					call check_parachute_saved
 					call heli_blades	
 					call shark_move
 					call clock_keys
+					call move_parachutes
 									
 			main_no_step:	
 			
@@ -153,8 +123,7 @@ main:
 					ld (second_update), a
 					; every second
 					
-					call start_shark_if_need
-					
+					call start_shark_if_need					
 					call update_clock
 				
 				main_no_second:		
@@ -163,7 +132,7 @@ main:
 
 				call update_screen							
 				
-				call parachute_keys
+				call parachute_keys				
 
 				ld b, KEYSEG_QWERT
 				ld d, KEY_Q
@@ -173,6 +142,7 @@ main:
 				ld b, KEYSEG_ZXCV
 				ld d, KEY_Z
 				call checkkey
+				ld c, i_manwater_1 - 1 ; just for test
 				call nz, man_lost
 
 				ld b, KEYSEG_ZXCV
@@ -187,6 +157,7 @@ main:
 				
 		end_main_return:
 				rst 0			; reset on exit
+
 				
 swap_logo: 
 				ld hl, attributes_start
@@ -197,7 +168,20 @@ swap_logo:
 				
 				ret
 
-
+; hl starting pos, b len
+; move bytes
+; modifies de, hl, a, b
+scroll_bytes:
+				ld d,h
+				ld e,l
+			scroll_bytes_loop:
+				dec de
+				ld a,(de)
+				ld (hl), a	
+				dec hl			
+				djnz scroll_bytes_loop
+				ld (hl), 0
+				ret
 
 get_free_parachute:
 				
@@ -213,12 +197,58 @@ check_position_used:
 				ret
 
 add_parachute:
+				ld a, 1 
+				ld (i_parachute_1_1), a
+				ld (i_parachute_2_1), a
+				ld (i_parachute_3_1), a
 				
 				ret
 
-check_parachute_saved:
-	
+parachute_saved:
+				ld a,(score)
+				inc a
+				ld (score), a
 				ret
+
+check_parachute_saved:
+				
+				ld a,( i_boat_left )
+				or a
+				jr z, check_parachute_saved_middle
+					ld bc, 15 			; replace by beep
+					call delay50s
+
+					ld a,( i_parachute_1_7 )
+					or a
+					ret z
+					xor a
+					ld (i_parachute_1_7), a
+					jr parachute_saved
+
+			check_parachute_saved_middle:
+				ld a,( i_boat_middle)
+				or a
+				jr z, check_parachute_saved_right
+					ld bc, 15 ; replace by beep
+					call delay50s
+
+					ld a,( i_parachute_2_6 )
+					or a
+					ret z
+					xor a
+					ld (i_parachute_2_6), a
+					jr parachute_saved
+				
+			check_parachute_saved_right:
+					ld bc, 15 ; replace by beep
+					call delay50s
+
+					ld a,( i_parachute_3_5 )
+					or a
+					ret z
+					xor a
+					ld (i_parachute_3_5), a
+					jr parachute_saved
 				
 do_parachute_fall:
 
@@ -232,10 +262,67 @@ is_parachute_hang_on_palm:
 				ret
 				
 
-move_parachute:
-				ret
+
 
 move_parachutes:
+				ld a, (parachute_step_index)
+				inc a
+				cp %11
+				jr nz, moveparachutes_cont
+					xor a
+			moveparachutes_cont:
+				ld (parachute_step_index), a				
+				or a
+				jr nz, move_parachutes_row2				
+					ld a, (i_parachute_1_7)
+					or a
+					jr z, move_parachutes_row1_cont
+						xor a
+						ld (i_parachute_1_7), a
+						ld c, i_manwater_3 - 1 
+						call man_lost
+				move_parachutes_row1_cont:
+					ld hl, i_parachute_1_7
+					ld b, 6			
+					call scroll_bytes
+					jr move_parachutes_end
+
+
+
+			move_parachutes_row2:
+				cp 1
+				jr nz, move_parachutes_row3
+					ld a, (i_parachute_2_6)
+					or a
+					jr z, move_parachutes_row2_cont
+						xor a
+						ld (i_parachute_2_6), a
+						ld c, i_manwater_2 - 1 
+						call man_lost
+				move_parachutes_row2_cont:
+					ld hl, i_parachute_2_6
+					ld b, 5				
+					call scroll_bytes
+					jr move_parachutes_end
+
+
+
+			move_parachutes_row3:
+				ld a, (i_parachute_3_5)
+				or a
+				jr z, move_parachutes_row3_cont
+					xor a
+					ld (i_parachute_3_5), a
+					ld c, i_manwater_1 - 1 
+					call man_lost
+
+			move_parachutes_row3_cont:
+				ld hl, i_parachute_3_5
+				ld b, 4				
+				call scroll_bytes	
+
+			move_parachutes_end:
+
 				ret
 
 show_lives:
@@ -251,7 +338,7 @@ show_lives:
 			
 			show_lives_loop:	
 				push bc
-					ld a, (i_live_3-i_screen+1)
+					ld a, i_live_3+1	; i_screen is align 256 so low byte of the pointer is also the index
 					sub b
 					call showImage
 				pop bc
@@ -305,23 +392,9 @@ start_game:
 				call start_live
 				ret		
 				
-; de pointer to image list
-Xshow_imagelist:
-				ld a, (de)							
-				or a	
-				ret z
-				
-				push de
-				call showImage
-				pop de
 
-				inc de
-				
-				jr Xshow_imagelist
-				
-				
 		
-man_lost:
+man_lost:				
 				call man_overboard
 			
 				ld a,(lives)
@@ -334,18 +407,16 @@ man_lost:
 				call start_live
 				ret
 				
-
+;modifies a
 hide_sharks:
-				ld a, (i_shark_1 - i_screen)
-		hide_sharks_loop:
-				push af
-					call hideImage
-				pop af
-				add a, 2
+			xor a
+			ld (i_shark_1), a
+			ld (i_shark_2), a
+			ld (i_shark_3), a
+			ld (i_shark_4), a
+			ld (i_shark_5), a
+			ret
 				
-				cp i_shark_5 - i_screen
-				jr nz, hide_sharks_loop
-				ret
 
 ; delays 50s of seconds
 ; bc=delay time
@@ -356,10 +427,16 @@ delay50s:		ld	hl, (frame_counter)
 				ld e, l
 				
 		delay50s_loop:
-				halt		; at least 1 frame = 1/50s
-				nop
+				;halt		; at least 1 frame = 1/50s
+				push hl				
+				push de
+				call parachute_keys				
+				call update_screen
+				pop de
+				pop hl
+				
 				ld	hl, (frame_counter)
-				and a
+				;and a
 				sbc hl, de
 				jp m, delay50s_loop
 
@@ -381,10 +458,11 @@ man_overboard_beep:
 				call delay50s
 				
 				ret
-				
+
+; c = start position	
 man_overboard:
 				call hide_sharks
-				ld a, i_manwater_1 - i_screen - 1
+				ld a, c
 				ld (man_overboard_position), a
 				ld a, 1
 				ld (man_overboard_entry), a
@@ -392,36 +470,34 @@ man_overboard:
 		man_overboard_loop:	
 				; Mostrem  tauró
 				ld a, (man_overboard_position)
-				cp i_manwater_1 - i_screen - 1
+				cp i_manwater_1 - 1
 				call nz, showImage
-				; Mostrem paracaigudista
-				ld a, (man_overboard_position)
+				; Mostrem paracaigudista				
 				inc a
 				call showImage
 				
+				call update_screen
 				call man_overboard_beep
-				ld a, (man_overboard_position)
-				cp i_shark_5 - i_screen - 1
+
+				ld a, (man_overboard_position)			; extra delay last pos
+				cp i_shark_5 - 1
 				jr nz, man_overboard_nofinal
 					ld bc, 15*3
 					call delay50s
+				
 				
 			man_overboard_nofinal:
 								
 				; Amaguem tauró
 				ld a, (man_overboard_position)
-				cp i_manwater_1 - i_screen - 1
+				cp i_manwater_1 - 1
 				call nz, hideImage
-				; Amaguem paracaigudista
-				ld a, (man_overboard_position)
+				; Amaguem paracaigudista				
 				inc a
-				call hideImage
-				
-				ld a, (man_overboard_position)
-				inc a
+				call hideImage								
 				inc a
 				ld (man_overboard_position), a
-				cp i_manwater_6 - i_screen + 1
+				cp i_manwater_6 + 1
 				jr nz, man_overboard_loop
 				
 
@@ -441,7 +517,7 @@ start_shark_if_need:
 				
 				xor a
 				ld (shark_walk_counter), a
-				ld a, 44
+				ld a, i_shark_1				; low byte pointer is index images aligned to 256 
 				ld (shark_walk_pos), a
 				call showImage
 				xor a
@@ -450,26 +526,23 @@ start_shark_if_need:
 				ret
 	
 shark_move:
-				ld a,(shark_walk_pos)
-				or a
-				ret z
+				ld a,(shark_walk_pos)			; is shark moving
+				or a			
+				ret z							; return if not
 				
-				ld a, (shark_walk_delay)
+				ld a, (shark_walk_delay)		; move once every 4 steps
 				inc a
 				ld (shark_walk_delay), a
 				cp 4
-				ret nz
-				
+				ret nz							; return if not				
 				xor a
-				ld (shark_walk_delay), a				
+				ld (shark_walk_delay), a		; reset move delay counter
 				
 				ld a,(shark_walk_pos)
 				call hideImage
-				
-				ld a,(shark_walk_pos)
 				inc a
 				inc a
-				cp 54
+				cp i_shark_5+2				; low byte pointer is index images aligned to 256 
 				jr nz, shark_move_next
 					xor a
 					ld (shark_walk_pos), a
@@ -484,7 +557,7 @@ shark_move:
 heli_blades:
 				ld a, (last_heli)
 				inc a
-				and %11
+				;and %11
 				ld (last_heli), a
 				
 				ld b, a
@@ -493,7 +566,7 @@ heli_blades:
 				and 1
 				ld (i_heli_blade_back), a
 				
-				ld b, a
+				ld a, b
 				dec  a
 				rra
 				and 1
@@ -542,19 +615,20 @@ moveleft:
 showallandhideforfun:
 	
 				call hideAll
-				halt
-				nop
-				halt
-				nop
-			
-				ld a, 1
-		slowshowAll_loop:
-				ld c, a
-				call showImage
+				call update_screen
 				halt
 				nop
 				
-				ld a, c
+			
+				ld a, 1
+		slowshowAll_loop:
+				push af
+				call showImage
+				call update_screen
+				halt
+				nop				
+				
+				pop af
 				inc a
 				cp number_of_images
 				jr nz, slowshowAll_loop

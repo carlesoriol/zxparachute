@@ -138,9 +138,9 @@ showImage:
 			
 			ld (showImage_index+1), a	
 			ld (showImage_restore_a+1), a	
-			
-		showImage_index:		
+							
 			ld a, 1
+			showImage_index:
 			ld (i_screen), a	
 		
 		showImage_restore_a:		
@@ -155,9 +155,9 @@ hideImage:
 			
 			ld (hideImage_index+1), a	
 			ld (hideImage_restore_a+1), a	
-			
-		hideImage_index:		
+					
 			xor a
+			hideImage_index:		
 			ld (i_screen), a	
 		
 		hideImage_restore_a:		
