@@ -1,10 +1,14 @@
 
 update_clock_dots:
-				ld a, (time_50s)
-				ld hl, img_digit_separator
+				ld a, (time_50s)				
 				cp 25				
-				jp c, showImage_item
-				jp hideImage_item
+				jr c, update_clock_dots_show
+					xor a
+					jr update_clock_dots_cont
+			update_clock_dots_show:
+				ld a, 1		
+			update_clock_dots_cont:	
+				ld (i_digit_separator),a 
 				
 				
 update_clock:
@@ -54,17 +58,17 @@ update_clock:
 				ld a, d
 				or a
 				jr z, update_clock_am
-					ld hl, img_am
-					call hideImage_item
-					ld hl, img_pm
-					call showImage_item
+					xor a
+					ld (i_am), a
+					inc a
+					ld (i_pm), a					
 					ret
 
 			update_clock_am:
-					ld hl, img_am
-					call showImage_item
-					ld hl, img_pm
-					call hideImage_item
+					xor a
+					ld (i_pm), a
+					inc a
+					ld (i_am), a
 					
 					ret
 

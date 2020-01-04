@@ -1,6 +1,83 @@
 
-
 align 256
+i_screen:
+
+	i_none:					defb 0
+	
+	i_heli:					defb 0
+	i_heli_blade_front:		defb 0
+	i_heli_blade_back:		defb 0
+		
+	i_miss:					defb 0
+	i_live_1:				defb 0
+	i_live_2:				defb 0
+	i_live_3:				defb 0
+		
+	i_monkey:				defb 0
+	i_bell_high:			defb 0
+	i_bell_low:				defb 0
+		
+	i_gamea:				defb 0
+	i_gameb:				defb 0
+		
+	i_am:					defb 0
+	i_pm:					defb 0
+	i_digit_1:				defb 0
+	i_digit_2:				defb 0
+	i_digit_separator:		defb 0
+	i_digit_3:				defb 0
+	i_digit_4:				defb 0
+		
+	i_boat_left:			defb 0
+	i_boat_middle:			defb 0
+	i_boat_right:			defb 0
+		
+	i_parachute_1_1:		defb 0
+	i_parachute_1_2:		defb 0
+	i_parachute_1_3:		defb 0
+	i_parachute_1_4:		defb 0
+	i_parachute_1_5:		defb 0
+	i_parachute_1_6:		defb 0
+	i_parachute_1_7:		defb 0
+		
+	i_parachute_2_1:		defb 0
+	i_parachute_2_2:		defb 0
+	i_parachute_2_3:		defb 0
+	i_parachute_2_4:		defb 0
+	i_parachute_2_5:		defb 0
+	i_parachute_2_6:		defb 0
+		
+	i_parachute_3_1:		defb 0
+	i_parachute_3_2:		defb 0
+	i_parachute_3_3:		defb 0
+	i_parachute_3_4:		defb 0
+	i_parachute_3_5:		defb 0
+	i_parachute_3_hang1:	defb 0
+	i_parachute_3_hang2:	defb 0
+		
+	i_manwater_1:			defb 0
+	i_shark_1:				defb 0
+	i_manwater_2:			defb 0
+	i_shark_2:				defb 0
+	i_manwater_3:			defb 0
+	i_shark_3:				defb 0
+	i_manwater_4:			defb 0
+	i_shark_4:				defb 0
+	i_manwater_5:			defb 0
+	i_shark_5:				defb 0
+	i_manwater_6:			defb 0
+
+	i_button_left:			defb 0
+	i_button_right:			defb 0
+
+	i_button_a:				defb 0
+	i_button_b:				defb 0
+
+i_screen_end:
+
+number_of_images:		equ 	(i_screen_end - i_screen)
+
+i_screen_last:			defs number_of_images
 
 img_attr_map:
 	defw 0x0000					;0
@@ -69,11 +146,16 @@ img_attr_map:
 	defw img_shark_5			;52
 	defw img_manwater_6			;53
 	
+	defw img_button_left		;54
+	defw img_button_right		;55
+	defw img_button_a			;56
+	defw img_button_b			;57
+	
 img_attr_map_end:
-	defw 0x0000					; 54
+	defw 0x0000					; 58
 
 	
-number_of_images:	equ 	((img_attr_map_end - img_attr_map) / 2)
+
 
 img_heli:
 				defw 22649, 22650, 22651, 22652, 22653, 22654, 22681, 22682, 22683, 22684, 22685, 22686, 22687, 22713, 22714, 22715, 22716, 22717, 22718, 22719, 22747, 22748, 22749, 22750, 0
@@ -191,3 +273,7 @@ img_shark_5:
 img_manwater_6:
 				defw 23159, 23160, 23161, 23191, 23192, 23193, 23223, 23224, 23225, 0
 
+img_button_left:	defw attributes_start + 32 * 22 + 1, attributes_start + 32 * 22 + 2, attributes_start + 32 * 23 + 1, attributes_start + 32 * 23 + 2, 0
+img_button_right:	defw attributes_start + 32 * 22 + 29, attributes_start + 32 * 22 + 30, attributes_start + 32 * 23 + 29, attributes_start + 32 * 23 + 30, 0
+img_button_a:		defw attributes_start + 32 * 22 + 1, attributes_start + 32 * 22 + 2, attributes_start + 32 * 23 + 1, attributes_start + 32 * 23 + 2, 0
+img_button_b:		defw attributes_start + 32 * 22 + 1, attributes_start + 32 * 22 + 2, attributes_start + 32 * 23 + 1, attributes_start + 32 * 23 + 2, 0

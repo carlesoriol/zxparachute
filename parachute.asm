@@ -102,6 +102,35 @@ main:
 				call waitnokey
 				
 				call swap_logo
+				
+				
+				call showAll
+				
+				call waitkey			
+				call waitnokey
+				
+				
+				call hideAll
+				
+				call waitkey			
+				call waitnokey
+				
+				
+				call showAll
+				
+				call waitkey			
+				call waitnokey
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
 								
 				call showallandhideforfun
 												
@@ -148,7 +177,9 @@ main:
 				
 				main_no_second:		
 				
-				call update_clock_dots						
+				call update_clock_dots			
+
+				call update_screen							
 				
 				call parachute_keys
 
@@ -230,15 +261,15 @@ show_lives:
 				or a
 				ret z
 				
-				ld hl,img_miss
-				call showImage_item
+				ld a, 1
+				ld (i_miss), a
 				
 				ld a,(lives)
 				ld b,a
 			
 			show_lives_loop:	
 				push bc
-					ld a,8
+					ld a, (i_live_3-i_screen+1)
 					sub b
 					call showImage
 				pop bc
@@ -282,28 +313,24 @@ start_game:
 				ret
 
 start_game_images: 
-				defw 	img_monkey
-				defw	img_heli, img_heli_blade_front
-				defw	img_am, img_digit_1, img_digit_2, img_digit_3, img_digit_4
-				defw	img_gamea, img_boat_middle
+				defw 	i_monkey
+				defw	i_heli, i_heli_blade_front
+				defw	i_am, i_digit_1, i_digit_2, i_digit_3, i_digit_4
+				defw	i_gamea, i_boat_middle
 				defw	0
 					
 				
 ; de pointer to image list
 show_imagelist:
-				ld a, (de)
-				ld l, a
-				inc de
-				ld a, (de)
-				ld h, a
-				inc de
-				
-				or l		; if hl = 0 return
+				ld a, (de)							
+				or a	
 				ret z
 				
 				push de
-				call showImage_item
+				call showImage
 				pop de
+
+				inc de
 				
 				jr show_imagelist
 				
@@ -324,15 +351,14 @@ man_lost:
 				
 
 hide_sharks:
-				ld a, 44
+				ld a, (i_shark_1 - i_screen)
 		hide_sharks_loop:
 				push af
 					call hideImage
 				pop af
-				inc a
-				inc a
+				add a, 2
 				
-				cp 54
+				cp i_shark_5 - i_screen
 				jr nz, hide_sharks_loop
 				ret
 
@@ -373,7 +399,7 @@ man_overboard_beep:
 				
 man_overboard:
 				call hide_sharks
-				ld a, 42
+				ld a, i_manwater_1 - i_screen - 1
 				ld (man_overboard_position), a
 				ld a, 1
 				ld (man_overboard_entry), a
@@ -381,7 +407,7 @@ man_overboard:
 		man_overboard_loop:	
 				; Mostrem  tauró
 				ld a, (man_overboard_position)
-				cp 42 
+				cp i_manwater_1 - i_screen - 1
 				call nz, showImage
 				; Mostrem paracaigudista
 				ld a, (man_overboard_position)
@@ -390,7 +416,7 @@ man_overboard:
 				
 				call man_overboard_beep
 				ld a, (man_overboard_position)
-				cp 52
+				cp i_shark_5 - i_screen - 1
 				jr nz, man_overboard_nofinal
 					ld bc, 15*3
 					call delay50s
@@ -399,7 +425,7 @@ man_overboard:
 								
 				; Amaguem tauró
 				ld a, (man_overboard_position)
-				cp 42
+				cp i_manwater_1 - i_screen - 1
 				call nz, hideImage
 				; Amaguem paracaigudista
 				ld a, (man_overboard_position)
@@ -410,7 +436,7 @@ man_overboard:
 				inc a
 				inc a
 				ld (man_overboard_position), a
-				cp 54
+				cp i_manwater_6 - i_screen + 1
 				jr nz, man_overboard_loop
 				
 
@@ -476,96 +502,55 @@ heli_blades:
 				and %11
 				ld (last_heli), a
 				
-			heli_blades_00:
-				ld a, (last_heli)
-				or a
-				jr nz, heli_blades_01
-					ld hl, img_heli_blade_front
-					call hideImage_item
-					ret
-					
-			heli_blades_01:
-				ld a, (last_heli)
-				cp 1
-				jr nz, heli_blades_02
-					ld hl, img_heli_blade_back
-					call showImage_item
-					ret
-			
-			heli_blades_02:
-				ld a, (last_heli)
-				cp 2
-				jr nz, heli_blades_03
-					ld hl, img_heli_blade_front
-					call showImage_item
-					ret
-			
-			heli_blades_03:	
-				ld hl, img_heli_blade_back
-				call hideImage_item					
+				ld b, a
+				
+				rra
+				and 1
+				ld (i_heli_blade_back), a
+				
+				ld b, a
+				dec  a
+				rra
+				and 1
+				ld (i_heli_blade_front), a								
 				
 				ret
-				
 
-moveleft:
-			ld a, (boatpos)
-			or a
-			ret z		; we are max left just return
-			dec a
-			ld (boatpos), a
-			
-			or a	
-			jr	z, boat_left
-			
-		; we are on center
-		boat_middle:	
-			ld hl, img_boat_left
-			call hideImage_item
-			ld hl, img_boat_middle
-			call showImage_item
-			ld hl, img_boat_right
-			call hideImage_item
-			
-			ret
-		
-		boat_left:	
-		; we are top left
-			
-			ld hl, img_boat_left
-			call showImage_item
-			ld hl, img_boat_middle
-			call hideImage_item
-			ld hl, img_boat_right
-			call hideImage_item
-			
-			ret
-			
 
 moveright:
 			ld a, (boatpos)
 			cp 2
 			ret z		; we are max right just return
 			inc a
+			
+			jr boat_repos
+				
+moveleft:
+			
+			ld a, (boatpos)
+			or a
+			ret z		; we are max left just return
+			dec a		
+		
+		boat_repos:	
+		
 			ld (boatpos), a
+			ld b, a
+				xor a
+				ld (i_boat_left),a
+				ld (i_boat_right),a
+				ld (i_boat_middle),a
+			ld a,b 
 			
-			cp 2	
-			jr	z, boat_right
-			
-		; we are on center
-		
-			jr boat_middle
-		
-		boat_right:	
-		; we are top right
-			
-			ld hl, img_boat_left
-			call hideImage_item
-			ld hl, img_boat_middle
-			call hideImage_item
-			ld hl, img_boat_right
-			call showImage_item
+			ld hl, i_boat_left
+			add l
+			ld l, a 
+			ld a, 1
+			ld (hl), a			
 			
 			ret
+			
+
 			
 			
 
@@ -640,7 +625,7 @@ update_time_int:
 include "parachute_lcd.asm"
 include "parachute_keys.asm"
 include "parachute_misc.asm"
-include "parachute_images.asm"
+include "parachute_screen.asm"
 include "parachute_logo.asm"
 include "parachute_screen_lib.asm"
 include "parachute_digits.asm"
