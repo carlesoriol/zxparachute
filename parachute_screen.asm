@@ -77,7 +77,7 @@ i_screen_end:
 
 number_of_images:		equ 	(i_screen_end - i_screen)
 
-i_screen_last:			defs number_of_images
+i_screen_last:			defs number_of_images, 1
 
 img_attr_map:
 	defw 0x0000					;0
@@ -273,7 +273,11 @@ img_shark_5:
 img_manwater_6:
 				defw 23159, 23160, 23161, 23191, 23192, 23193, 23223, 23224, 23225, 0
 
-img_button_left:	defw attributes_start + 32 * 22 + 1, attributes_start + 32 * 22 + 2, attributes_start + 32 * 23 + 1, attributes_start + 32 * 23 + 2, 0
-img_button_right:	defw attributes_start + 32 * 22 + 29, attributes_start + 32 * 22 + 30, attributes_start + 32 * 23 + 29, attributes_start + 32 * 23 + 30, 0
-img_button_a:		defw attributes_start + 32 * 22 + 1, attributes_start + 32 * 22 + 2, attributes_start + 32 * 23 + 1, attributes_start + 32 * 23 + 2, 0
-img_button_b:		defw attributes_start + 32 * 22 + 1, attributes_start + 32 * 22 + 2, attributes_start + 32 * 23 + 1, attributes_start + 32 * 23 + 2, 0
+img_button_left:	defw attributes_start + 32 * 22 + 2, attributes_start + 32 * 22 + 3
+					defw attributes_start + 32 * 23 + 2, attributes_start + 32 * 23 + 2, 0
+img_button_right:	defw attributes_start + 32 * 22 + 28, attributes_start + 32 * 22 + 29
+					defw attributes_start + 32 * 23 + 28, attributes_start + 32 * 23 + 29, 0
+img_button_a:		defw attributes_start + 32 * 22 + 5, attributes_start + 32 * 22 + 6, attributes_start + 32 * 22 + 7
+					defw attributes_start + 32 * 23 + 6, attributes_start + 32 * 23 + 6, attributes_start + 32 * 23 + 7, 0
+img_button_b:		defw attributes_start + 32 * 22 + 24, attributes_start + 32 * 22 + 25, attributes_start + 32 * 22 + 26
+					defw attributes_start + 32 * 23 + 24, attributes_start + 32 * 23 + 25, attributes_start + 32 * 23 + 26, 0

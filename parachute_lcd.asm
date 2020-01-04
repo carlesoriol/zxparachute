@@ -2,33 +2,42 @@
 update_screen:
 
 				ld a, 0
-				ld hl, i_screen
-				ld de, i_screen_last
+				ld de, i_screen
+				ld hl, i_screen_last
 
 		update_screen_loop:
-				inc a
+				inc a						; there's no object 0
 				cp number_of_images
 				ret z
-				inc hl
 				inc de
+				inc hl
 
 				push af
 					ld c, a				; keep index
-					ld a,(hl)
+					ld a,(de)
 					ld b, a
-					ld a, (de) 
+					ld a, (hl) 
 					cp b
 					jr z, update_screen_no_change
 
+						push hl
+						push de
+
+						ld (hl), b
 						or a
 						jr z, update_screen_show						
 							ld a, c						; hide
 							call IhideImage
-							jr update_screen_no_change
+							jr update_screen_show_cont
 
 						update_screen_show:	
 							ld a,c						; show
 							call IshowImage
+
+						update_screen_show_cont:
+
+						pop de						
+						pop hl
 				
 					update_screen_no_change:
 				pop af
@@ -60,7 +69,7 @@ hideAll:
 				xor a
 								
 			i_screen_a_to_all:
-				ld b, i_screen_end - i_screen		
+				ld b, (i_screen_end - i_screen) - 1
 			
 			hideAll_loop:
 				ld hl, i_screen

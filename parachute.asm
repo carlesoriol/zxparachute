@@ -99,40 +99,22 @@ main:
 								
 				call waitnokey
 				call waitkey			
-				call waitnokey
 				
 				call swap_logo
 				
 				
-				call showAll
+				call hideAll
+				call update_screen
 				
-				call waitkey			
-				call waitnokey
+				
+				call showAll
+				call update_screen
 				
 				
 				call hideAll
-				
-				call waitkey			
-				call waitnokey
-				
-				
-				call showAll
-				
-				call waitkey			
-				call waitnokey
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-								
-				call showallandhideforfun
+				call update_screen
+												
+				; call showallandhideforfun
 												
 				ld a, 7
 				ld (step_speed), a
@@ -287,10 +269,21 @@ start_live:
 				
 start_game:
 				call hideAll
-				ld de, start_game_images
-				call show_imagelist
-								
-				ld a, 1
+
+				ld a, 1												
+				ld (i_monkey), a
+				ld (i_heli), a
+				ld (i_heli_blade_front), a				
+				ld (i_heli_blade_back), a
+				ld (i_am), a
+				ld (i_digit_1), a
+				ld (i_digit_2), a
+				ld (i_digit_3), a
+				ld (i_digit_4), a
+				ld (i_gamea), a
+				ld (i_boat_middle), a
+
+				;ld a, 1
 				ld (boatpos), a
 				
 				ld hl,0
@@ -310,18 +303,10 @@ start_game:
 				ld (playing), a
 				
 				call start_live
-				ret
-
-start_game_images: 
-				defw 	i_monkey
-				defw	i_heli, i_heli_blade_front
-				defw	i_am, i_digit_1, i_digit_2, i_digit_3, i_digit_4
-				defw	i_gamea, i_boat_middle
-				defw	0
-					
+				ret		
 				
 ; de pointer to image list
-show_imagelist:
+Xshow_imagelist:
 				ld a, (de)							
 				or a	
 				ret z
@@ -332,7 +317,7 @@ show_imagelist:
 
 				inc de
 				
-				jr show_imagelist
+				jr Xshow_imagelist
 				
 				
 		
