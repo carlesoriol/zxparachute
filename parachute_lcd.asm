@@ -131,6 +131,28 @@ IshowImage:		call getImageAttribsPointer
 				jr showImage_loop
 
 
+; a = image number
+; c = attributes
+; modifica hl, de, a
+IImageAttributes:
+				call getImageAttribsPointer						
+				ex de, hl
+		IImageAttributes_item:		
+		IImageAttributes_loop:		
+				ld e, (hl)
+				inc hl
+				ld d, (hl)
+				inc hl
+				
+				ld a, d
+				or e
+				ret z
+				
+				ld a, c
+				ld (de), a
+				
+				jr IImageAttributes_loop
+
 ; a = image number						
 ; modifies --
 ; dynamically modified

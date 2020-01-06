@@ -87,13 +87,14 @@ main:
 												
 				ld a, 8
 				ld (step_speed), a
+				xor a
+				ld (playing), a
 								
 				call update_clock
+				call start_machine
 				
 				ld de, rpsinterrupt
-				call setInterruptTo
-				
-				call start_game
+				call setInterruptTo				
 				
 		main_loop:
 				
@@ -108,39 +109,74 @@ main:
 					ld (step), a
 					; every step
 					
-					call check_parachute_saved
-					call heli_blades	
-					call shark_move
+					ld a,(playing)
+					or a
+					jr z, step_noplay
+						call check_parachute_saved
+						call heli_blades	
+						call shark_move
+						call move_parachutes
+						call add_parachute_if_possible
+					
+				step_noplay:	
 					call clock_keys
-					call move_parachutes
-					call add_parachute_if_possible
 									
 			main_no_step:	
 			
-
 				ld a, (second_update)
 				or a
 				jr z, main_no_second
 					xor a
 					ld (second_update), a
 					; every second
-					
-					call start_shark_if_need					
+					ld a,(playing)
+					or a
+					jr z, second_noplay
+						call start_shark_if_need					
+				second_noplay:	
 					call update_clock
 				
 				main_no_second:		
 				
-				call update_clock_dots			
+				ld a,(playing)
+				or a
+				jr z, main_noplay
+					
+					call parachute_keys	
+					jr main_cont
 
-				call parachute_keys	
-				call update_screen														
+			main_noplay:
+				call update_clock_dots		
 
-				ld b, KEYSEG_ZXCV
-				ld d, KEY_Z
+				ld b, KEYSEG_ASDFG
+				ld d, KEY_A
 				call checkkey
-				ld c, i_manwater_1 - 1 ; just for test
-				call nz, man_lost
+				jr z, game_keys_cont
+					xor a
+					ld (game), a					
+					call start_game
+					ld a, 1
+					ld (i_gamea), a					
+					call move_parachute_sound
+			
+			game_keys_cont:
+			
+				ld b, KEYSEG_MNB
+				ld d, KEY_B
+				call checkkey
+				jr z, game_keys_cont2
+					ld a, 1
+					ld (game), a	
+					call start_game
+					ld a, 1
+					ld (i_gameb), a
+					call move_parachute_sound
+			
+			game_keys_cont2:
 
+			main_cont:
+				call update_screen														
+				
 				ld b, KEYSEG_ZXCV
 				ld d, KEY_C
 				call checkkey
@@ -155,11 +191,7 @@ main:
 				rst 0			; reset on exit
 
 
-reset_step:
-			xor a 
-			ld (step_counter), a
-			ld (step), a
-			ret
+
 				
 swap_logo: 
 				ld hl, attributes_start
@@ -186,13 +218,6 @@ scroll_bytes:
 				ret
 
 
-get_random_position:
-
-				ret
-				
-check_position_used:
-
-				ret
 
 ; column in a
 add_parachute:
@@ -300,79 +325,6 @@ check_parachute_saved:
 					ld (i_parachute_3_5), a
 					jr parachute_saved
 				
-do_parachute_fall:
-
-				ret
-
-can_parachute_hang_on_palm:
-
-				ret
-
-is_parachute_hang_on_palm:
-				ret
-				
-; get number of flying parachutes
-; modifies bc, hl, a
-; returns a				
-parachute_number:
-				ld hl, i_parachute_1_1
-				ld b, 7
-				call checksum8
-				ld c, a
-
-				ld hl, i_parachute_2_1
-				ld b, 6
-				call checksum8
-				add c
-				ld c, a
-
-				ld hl, i_parachute_3_1
-				ld b, 5
-				call checksum8
-				add c
-
-				ret
-
-
-
-move_parachute_sound:
-				ld hl, #f1	
-				ld de, 2				
-				call beeper				
-				ret
-
-parachute_rescued_sound:
-
-				ld b, #1a
-			parachute_rescued_sound_loop:
-				push bc
-				
-				ld hl, #ca
-				ld de, 2
-				call beeper
-							
-				ld b, 200				; use nops to produce broken sound
-			parachute_rescued_sound_loop2
-				nop
-				nop
-				djnz parachute_rescued_sound_loop2
-
-				pop bc
-				djnz parachute_rescued_sound_loop
-
-				ret
-
-; hl = start
-; b = elements
-; modifies hl, b, a
-; returns a
-checksum8:
-				xor a
-		checksum8_loop:
-				add (hl)
-				inc hl
-				djnz checksum8_loop
-				ret
 
 move_parachutes:
 				ld a, (parachute_step_index)			
@@ -480,11 +432,13 @@ start_live:
 				ld (shark_walk_pos), a	
 				call show_lives
 					
-				call reset_step
-
+				xor a 
+				ld (step_counter), a
+				ld (step), a
+			
 				ret
-				
-start_game:
+
+start_machine:
 				call hideAll
 
 				ld a, 1												
@@ -494,8 +448,40 @@ start_game:
 				ld (i_heli_blade_back), a				
 				ld (i_digit_1), a
 				ld (i_digit_2), a
-				ld (i_digit_3), a
-				ld (i_gamea), a
+				ld (i_digit_separator), a				
+				ld (i_digit_3), a				
+				ld (i_digit_4), a				
+				ld (i_boat_middle), a
+				ld (boatpos), a
+				
+				xor a
+				ld (i_am), a
+
+				ld c, PAPER_BLACK | YELLOW | BRIGHT
+				ld a, i_button_a
+				call IImageAttributes
+				ld a, i_button_b
+				call IImageAttributes
+
+
+				ret
+
+start_game:
+				call hideAll
+				ld c, 0
+				ld a, i_button_a
+				call IImageAttributes
+				ld a, i_button_b
+				call IImageAttributes
+				
+				ld a, 1												
+				ld (i_monkey), a
+				ld (i_heli), a
+				ld (i_heli_blade_front), a				
+				ld (i_heli_blade_back), a				
+				ld (i_digit_1), a
+				ld (i_digit_2), a
+				ld (i_digit_3), a				
 				ld (i_boat_middle), a
 				ld (max_parachutes), a
 				ld (playing), a				
@@ -511,44 +497,29 @@ start_game:
 				xor a
 				ld (lives), a
 				ld (i_am), a
+				ld (i_pm), a
 				ld (i_digit_separator), a
-				
 				
 				
 				call start_live
 				ret		
 				
-
-parachute_lost_sound:
-				ld b, #1a
-			parachute_lost_sound_loop:
-				push bc
-				
-				ld hl, #1ca
-				ld de, 2
-				call beeper
-							
-				ld b, 200				; use nops to produce broken sound
-			parachute_lost_sound_loop2
-				nop
-				nop
-				djnz parachute_lost_sound_loop2
-
-				pop bc
-				djnz parachute_lost_sound_loop
-
-				ret
 		
 man_lost:				
 				call man_overboard
 			
 				ld a,(lives)
-				cp 3
-				jr z, man_lost_last
-					inc a
-					ld (lives), a
-			man_lost_last:	
+				inc a
+				ld (lives), a
 			
+				cp 3				
+				jr nz, man_lost_not_last
+				xor a
+				ld (playing), a
+				call show_lives
+				ret
+
+			man_lost_not_last:
 				ld hl, num_parachutes
 				dec (hl)
 
@@ -765,8 +736,6 @@ moveleft:
 			
 			ret
 			
-
-			
 			
 
 showallandhideforfun:
@@ -793,14 +762,11 @@ showallandhideforfun:
 				ret
 				
 
-
-
 rpsinterrupt:
 			
 				ld hl, frame_counter
 				call inc32counter
-				call update_time_int
-			
+				call update_time_int		
 			
 		step_counter_interrupt:
 				ld a, (step_speed)
@@ -838,6 +804,7 @@ update_time_int:
 
 				ret				
 
+
 include "parachute_lcd.asm"
 include "parachute_keys.asm"
 include "parachute_misc.asm"
@@ -846,14 +813,14 @@ include "parachute_logo.asm"
 include "parachute_screen_lib.asm"
 include "parachute_digits.asm"
 include "parachute_clock.asm"
-include "parachute_sound.asm"
+include "parachute_sounds.asm"
 
 include 'libs/random_lib.asm' 
 include 'libs/math_lib.asm' 
+include 'libs/sound_lib.asm' 
 
 
 include 'libs/interrupt_lib_16k.asm' ; always include last line or before org	
-
 
 
 run main

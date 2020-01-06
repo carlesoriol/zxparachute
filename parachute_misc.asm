@@ -112,4 +112,14 @@ swap_memory:
 				
 				ret
 
-
+; hl = start
+; b = elements
+; modifies hl, b, a
+; returns a
+checksum8:
+				xor a
+		checksum8_loop:
+				add (hl)
+				inc hl
+				djnz checksum8_loop
+				ret

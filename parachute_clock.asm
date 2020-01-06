@@ -1,10 +1,17 @@
 
 update_clock_dots:
 
-
 				ld a, (playing)
-				or a
-				ret nz
+				ld c, a
+				ld a, (score)			; if there's score don't show clock
+				ld b, a
+				ld a, (score+1)
+				or b	
+				or c		
+				jp z, update_clock_dots_time	
+					xor a
+					ld (i_digit_separator),a 
+					ret
 
 			update_clock_dots_time:
 				ld a, (time_50s)				
@@ -21,9 +28,15 @@ update_clock_dots:
 				
 update_clock:
 				ld a, (playing)
-				or a
+				ld c, a
+				ld a, (score)			; if there's score don't show clock
+				ld b, a
+				ld a, (score+1)
+				or b	
+				or c			
 				jp nz, update_score
 
+				
 				ld a, (time_minute)
 				ld d, a
 				ld e, 10
@@ -146,6 +159,11 @@ update_score:
 				ld a, l
 				ld bc,#1828
 				call pinta_digit
+
+				xor a
+				ld (i_am), a
+				ld (i_pm), a	
+				ld (i_digit_separator), a
 
 				ret
 
