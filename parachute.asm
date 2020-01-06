@@ -155,7 +155,11 @@ main:
 				rst 0			; reset on exit
 
 
-
+reset_step:
+			xor a 
+			ld (step_counter), a
+			ld (step), a
+			ret
 				
 swap_logo: 
 				ld hl, attributes_start
@@ -194,10 +198,10 @@ check_position_used:
 add_parachute:
 				ld hl, i_parachute_1_1
 				cp 1
-				jr nz, $+3
+				jr nz, $+5
 					ld hl, i_parachute_2_1
 				cp 2
-				jr nz, $+3
+				jr nz, $+5
 					ld hl, i_parachute_3_1
 				
 				ld (hl), 1
@@ -356,6 +360,8 @@ parachute_rescued_sound:
 				pop bc
 				djnz parachute_rescued_sound_loop
 
+				ret
+
 ; hl = start
 ; b = elements
 ; modifies hl, b, a
@@ -474,6 +480,8 @@ start_live:
 				ld (shark_walk_pos), a	
 				call show_lives
 					
+				call reset_step
+
 				ret
 				
 start_game:
@@ -511,6 +519,25 @@ start_game:
 				ret		
 				
 
+parachute_lost_sound:
+				ld b, #1a
+			parachute_lost_sound_loop:
+				push bc
+				
+				ld hl, #1ca
+				ld de, 2
+				call beeper
+							
+				ld b, 200				; use nops to produce broken sound
+			parachute_lost_sound_loop2
+				nop
+				nop
+				djnz parachute_lost_sound_loop2
+
+				pop bc
+				djnz parachute_lost_sound_loop
+
+				ret
 		
 man_lost:				
 				call man_overboard
@@ -565,18 +592,23 @@ delay50s:		ld	hl, (frame_counter)
 
 
 man_overboard_beep:
+				ld bc, 5
+				call delay50s	
+
 				ld a, (man_overboard_entry)
 				or a
 				jr z, man_overboard_beep_regular
-					ld bc, 15 * 3
-					call delay50s				
+					call parachute_lost_sound
+					call parachute_lost_sound
+					call parachute_lost_sound
+					call parachute_lost_sound
+
 					xor a
 					ld (man_overboard_entry), a
 					ret
 					
-			man_overboard_beep_regular:	
-				ld bc, 15
-				call delay50s
+			man_overboard_beep_regular:					
+				call parachute_lost_sound
 				
 				ret
 
@@ -621,6 +653,11 @@ man_overboard:
 				cp i_manwater_6 + 1
 				jr nz, man_overboard_loop
 				
+					call parachute_lost_sound
+					call parachute_lost_sound
+					call parachute_lost_sound
+					call parachute_lost_sound
+
 
 				ret
 
@@ -820,4 +857,3 @@ include 'libs/interrupt_lib_16k.asm' ; always include last line or before org
 
 
 run main
-
