@@ -127,24 +127,24 @@ clock_keys:
 
 update_score:
 				ld hl, (score)
-				ld c, 100
-				call div_hl_c
-
-				ld a, l
-				ld bc,#1828
-				call pinta_digit
-
-				ld hl, (score)
 				ld c, 10
 				call div_hl_c
 
-				push af		
-				ld a, l
-				ld bc,#1840				
-				call pinta_digit
-
-				pop af
+				push hl				
 				ld bc,#1850
+				call pinta_digit
+				pop hl
+
+				ld c, 10
+				call div_hl_c
+
+				push hl				
+				ld bc,#1840
+				call pinta_digit
+				pop hl
+
+				ld a, l
+				ld bc,#1828
 				call pinta_digit
 
 				ret

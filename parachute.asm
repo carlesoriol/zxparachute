@@ -43,7 +43,7 @@ man_overboard_entry:	defb 0
 
 max_parachutes:	defb	0
 
-				defb	0
+num_parachutes	defb	0
 				defb	0
 
 
@@ -56,8 +56,8 @@ gameb_highcore	defw 0
 fons:
 incbin 	"parachute_screen.scr"	
 
-				;org 0x5ccb
-				org 0x6000
+				org 0x5ccb
+				
 main:				
 				ld sp, 0x8000
 
@@ -83,7 +83,7 @@ main:
 				call showallandhideforfun
 				call hideAll
 				call update_screen
-				
+				call randomize
 												
 				ld a, 8
 				ld (step_speed), a
@@ -113,6 +113,7 @@ main:
 					call shark_move
 					call clock_keys
 					call move_parachutes
+					call add_parachute_if_possible
 									
 			main_no_step:	
 			
@@ -131,14 +132,8 @@ main:
 				
 				call update_clock_dots			
 
-				call update_screen							
-				
-				call parachute_keys				
-
-				ld b, KEYSEG_QWERT
-				ld d, KEY_Q
-				call checkkey
-				call nz, add_parachute
+				call parachute_keys	
+				call update_screen														
 
 				ld b, KEYSEG_ZXCV
 				ld d, KEY_Z
@@ -186,10 +181,6 @@ scroll_bytes:
 				ld (hl), 0
 				ret
 
-get_free_parachute:
-				
-				ld a, 0
-				ret
 
 get_random_position:
 
@@ -199,20 +190,76 @@ check_position_used:
 
 				ret
 
+; column in a
 add_parachute:
-				ld a, 1 
-				;ld (i_parachute_1_1), a
-				ld (i_parachute_2_1), a
-				;ld (i_parachute_3_1), a
+				ld hl, i_parachute_1_1
+				cp 1
+				jr nz, $+3
+					ld hl, i_parachute_2_1
+				cp 2
+				jr nz, $+3
+					ld hl, i_parachute_3_1
+				
+				ld (hl), 1
+
 				call move_parachute_sound
+
+				ld hl, num_parachutes
+				inc (hl)
+
 				ret
 
-parachute_saved:
+; a= current row
+add_parachute_if_possible:
+				ld a, (max_parachutes)
+				ld b, a
+				ld a, (num_parachutes)
+				cp b
+				ret nc				
+				
+
+				call random
+				cp #c0
+				ret c
+
+				ld a, (parachute_step_index)
+				and %11
+				cp %11
+				ret z
+
+				call add_parachute
+
+				ret
+
+parachute_saved:				
 				ld hl,(score)
 				inc hl
 				ld (score),hl
+
+				; The following routine divides hl by c and places the quotient in hl and the remainder in a
+
+				ld a, l
+				sub a, 4
+				add a,18
+				ld l, a				
+
+				ld c, 18
+				call div_hl_c
+
+				inc hl
+				ld a, l
+				cp 6
+				jr c, parachute_saved_max6_cont
+					ld a, 6
+			parachute_saved_max6_cont:	
+				ld (max_parachutes), a
+
 				call update_clock
 				call update_screen
+
+				ld hl, num_parachutes
+				dec (hl)
+
 				ret
 
 check_parachute_saved:
@@ -322,8 +369,7 @@ checksum8:
 				ret
 
 move_parachutes:
-				ld a, (parachute_step_index)
-			carles:
+				ld a, (parachute_step_index)			
 				inc a
 				cp %11
 				jr nz, moveparachutes_cont
@@ -347,7 +393,8 @@ move_parachutes:
 				move_parachutes_row1_cont:
 					ld hl, i_parachute_1_7
 					ld b, 6			
-					call scroll_bytes
+					call scroll_bytes					
+					
 					jr move_parachutes_end
 
 
@@ -395,7 +442,7 @@ move_parachutes:
 					ld hl, i_parachute_3_5
 					ld b, 4				
 					call scroll_bytes	
-
+					
 			move_parachutes_end:
 
 				ret
@@ -475,6 +522,9 @@ man_lost:
 					ld (lives), a
 			man_lost_last:	
 			
+				ld hl, num_parachutes
+				dec (hl)
+
 				call start_live
 				ret
 				
@@ -758,12 +808,16 @@ include "parachute_screen.asm"
 include "parachute_logo.asm"
 include "parachute_screen_lib.asm"
 include "parachute_digits.asm"
-include "parachute_math.asm"
 include "parachute_clock.asm"
 include "parachute_sound.asm"
 
+include 'libs/random_lib.asm' 
+include 'libs/math_lib.asm' 
+
 
 include 'libs/interrupt_lib_16k.asm' ; always include last line or before org	
+
+
 
 run main
 
