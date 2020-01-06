@@ -33,7 +33,7 @@ setInterruptTo:
 		ret
 
 
-       			
+      			
 		ORG           $7C7C
 IM2Routine:   
 		push af             ; preserve registers.
@@ -42,8 +42,7 @@ IM2Routine:
 		push de
 		push ix
 interruptcallfunction:
-		call #0000          ;	:replaced as SetInterruptTo
-		rst 56              ; ROM routine, read keys and update clock.
+		call #0000          ;	:replaced as SetInterruptTo		
 		pop ix              ; restore registers.
 		pop de
 		pop hl

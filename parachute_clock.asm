@@ -1,17 +1,29 @@
 
 update_clock_dots:
+
+
+				ld a, (playing)
+				or a
+				ret nz
+
+			update_clock_dots_time:
 				ld a, (time_50s)				
 				cp 25				
 				jr c, update_clock_dots_show
+			update_clock_dots_cont2:
 					xor a
 					jr update_clock_dots_cont
 			update_clock_dots_show:
 				ld a, 1		
 			update_clock_dots_cont:	
 				ld (i_digit_separator),a 
-				
+				ret
 				
 update_clock:
+				ld a, (playing)
+				or a
+				jp nz, update_score
+
 				ld a, (time_minute)
 				ld d, a
 				ld e, 10
@@ -111,5 +123,30 @@ clock_keys:
 
                     jp update_clock
 
+
+
+update_score:
+				ld hl, (score)
+				ld c, 100
+				call div_hl_c
+
+				ld a, l
+				ld bc,#1828
+				call pinta_digit
+
+				ld hl, (score)
+				ld c, 10
+				call div_hl_c
+
+				push af		
+				ld a, l
+				ld bc,#1840				
+				call pinta_digit
+
+				pop af
+				ld bc,#1850
+				call pinta_digit
+
+				ret
 
 

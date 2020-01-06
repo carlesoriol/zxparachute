@@ -56,7 +56,8 @@ gameb_highcore	defw 0
 fons:
 incbin 	"parachute_screen.scr"	
 
-				org 0x5ccb
+				;org 0x5ccb
+				org 0x6000
 main:				
 				ld sp, 0x8000
 
@@ -86,7 +87,7 @@ main:
 												
 				ld a, 8
 				ld (step_speed), a
-				
+								
 				call update_clock
 				
 				ld de, rpsinterrupt
@@ -158,6 +159,8 @@ main:
 		end_main_return:
 				rst 0			; reset on exit
 
+
+
 				
 swap_logo: 
 				ld hl, attributes_start
@@ -198,16 +201,18 @@ check_position_used:
 
 add_parachute:
 				ld a, 1 
-				ld (i_parachute_1_1), a
+				;ld (i_parachute_1_1), a
 				ld (i_parachute_2_1), a
-				ld (i_parachute_3_1), a
-				
+				;ld (i_parachute_3_1), a
+				call move_parachute_sound
 				ret
 
 parachute_saved:
-				ld a,(score)
-				inc a
-				ld (score), a
+				ld hl,(score)
+				inc hl
+				ld (score),hl
+				call update_clock
+				call update_screen
 				ret
 
 check_parachute_saved:
@@ -215,12 +220,10 @@ check_parachute_saved:
 				ld a,( i_boat_left )
 				or a
 				jr z, check_parachute_saved_middle
-					ld bc, 15 			; replace by beep
-					call delay50s
-
 					ld a,( i_parachute_1_7 )
 					or a
 					ret z
+					call parachute_rescued_sound
 					xor a
 					ld (i_parachute_1_7), a
 					jr parachute_saved
@@ -229,23 +232,19 @@ check_parachute_saved:
 				ld a,( i_boat_middle)
 				or a
 				jr z, check_parachute_saved_right
-					ld bc, 15 ; replace by beep
-					call delay50s
-
-					ld a,( i_parachute_2_6 )
+					ld a, (i_parachute_2_6)
 					or a
 					ret z
+					call parachute_rescued_sound
 					xor a
 					ld (i_parachute_2_6), a
 					jr parachute_saved
 				
 			check_parachute_saved_right:
-					ld bc, 15 ; replace by beep
-					call delay50s
-
 					ld a,( i_parachute_3_5 )
 					or a
 					ret z
+					call parachute_rescued_sound
 					xor a
 					ld (i_parachute_3_5), a
 					jr parachute_saved
@@ -261,11 +260,70 @@ can_parachute_hang_on_palm:
 is_parachute_hang_on_palm:
 				ret
 				
+; get number of flying parachutes
+; modifies bc, hl, a
+; returns a				
+parachute_number:
+				ld hl, i_parachute_1_1
+				ld b, 7
+				call checksum8
+				ld c, a
+
+				ld hl, i_parachute_2_1
+				ld b, 6
+				call checksum8
+				add c
+				ld c, a
+
+				ld hl, i_parachute_3_1
+				ld b, 5
+				call checksum8
+				add c
+
+				ret
 
 
+
+move_parachute_sound:
+				ld hl, #f1	
+				ld de, 2				
+				call beeper				
+				ret
+
+parachute_rescued_sound:
+
+				ld b, #1a
+			parachute_rescued_sound_loop:
+				push bc
+				
+				ld hl, #ca
+				ld de, 2
+				call beeper
+							
+				ld b, 200				; use nops to produce broken sound
+			parachute_rescued_sound_loop2
+				nop
+				nop
+				djnz parachute_rescued_sound_loop2
+
+				pop bc
+				djnz parachute_rescued_sound_loop
+
+; hl = start
+; b = elements
+; modifies hl, b, a
+; returns a
+checksum8:
+				xor a
+		checksum8_loop:
+				add (hl)
+				inc hl
+				djnz checksum8_loop
+				ret
 
 move_parachutes:
 				ld a, (parachute_step_index)
+			carles:
 				inc a
 				cp %11
 				jr nz, moveparachutes_cont
@@ -273,7 +331,12 @@ move_parachutes:
 			moveparachutes_cont:
 				ld (parachute_step_index), a				
 				or a
-				jr nz, move_parachutes_row2				
+				jr nz, move_parachutes_row2		
+					ld hl, i_parachute_1_1
+					ld b, 7
+					call checksum8
+					call nz, move_parachute_sound		
+
 					ld a, (i_parachute_1_7)
 					or a
 					jr z, move_parachutes_row1_cont
@@ -292,6 +355,11 @@ move_parachutes:
 			move_parachutes_row2:
 				cp 1
 				jr nz, move_parachutes_row3
+					ld hl, i_parachute_2_1
+					ld b, 6
+					call checksum8
+					call nz, move_parachute_sound		
+
 					ld a, (i_parachute_2_6)
 					or a
 					jr z, move_parachutes_row2_cont
@@ -308,18 +376,25 @@ move_parachutes:
 
 
 			move_parachutes_row3:
-				ld a, (i_parachute_3_5)
-				or a
-				jr z, move_parachutes_row3_cont
-					xor a
-					ld (i_parachute_3_5), a
-					ld c, i_manwater_1 - 1 
-					call man_lost
+				cp 2
+				jr nz, move_parachutes_end
+					ld hl, i_parachute_3_1
+					ld b, 5
+					call checksum8
+					call nz, move_parachute_sound	
 
-			move_parachutes_row3_cont:
-				ld hl, i_parachute_3_5
-				ld b, 4				
-				call scroll_bytes	
+					ld a, (i_parachute_3_5)
+					or a
+					jr z, move_parachutes_row3_cont
+						xor a
+						ld (i_parachute_3_5), a
+						ld c, i_manwater_1 - 1 
+						call man_lost
+
+				move_parachutes_row3_cont:
+					ld hl, i_parachute_3_5
+					ld b, 4				
+					call scroll_bytes	
 
 			move_parachutes_end:
 
@@ -361,16 +436,14 @@ start_game:
 				ld (i_monkey), a
 				ld (i_heli), a
 				ld (i_heli_blade_front), a				
-				ld (i_heli_blade_back), a
-				ld (i_am), a
+				ld (i_heli_blade_back), a				
 				ld (i_digit_1), a
 				ld (i_digit_2), a
 				ld (i_digit_3), a
-				ld (i_digit_4), a
 				ld (i_gamea), a
 				ld (i_boat_middle), a
-
-				;ld a, 1
+				ld (max_parachutes), a
+				ld (playing), a				
 				ld (boatpos), a
 				
 				ld hl,0
@@ -380,14 +453,12 @@ start_game:
 				ld (counter), hl
 				ld (counter+2), hl
 				
-				ld a, 0
+				xor a
 				ld (lives), a
+				ld (i_am), a
+				ld (i_digit_separator), a
 				
-				ld a, 1
-				ld (max_parachutes), a
 				
-				ld a,1
-				ld (playing), a
 				
 				call start_live
 				ret		
@@ -511,7 +582,7 @@ start_shark_if_need:
 				ld a, (shark_walk_counter)
 				inc a
 				ld (shark_walk_counter), a
-				cp 10
+				cp 7
 				
 				ret nz
 				
@@ -556,8 +627,7 @@ shark_move:
 
 heli_blades:
 				ld a, (last_heli)
-				inc a
-				;and %11
+				inc a				
 				ld (last_heli), a
 				
 				ld b, a
@@ -690,6 +760,7 @@ include "parachute_screen_lib.asm"
 include "parachute_digits.asm"
 include "parachute_math.asm"
 include "parachute_clock.asm"
+include "parachute_sound.asm"
 
 
 include 'libs/interrupt_lib_16k.asm' ; always include last line or before org	

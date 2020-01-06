@@ -45,6 +45,7 @@ i_screen:
 	i_parachute_2_3:		defb 0
 	i_parachute_2_4:		defb 0
 	i_parachute_2_5:		defb 0
+	i_parachute_2_6:		defb 0
 	
 	i_parachute_3_1:		defb 0
 	i_parachute_3_2:		defb 0
