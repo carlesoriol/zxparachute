@@ -25,7 +25,7 @@ Open z80 or tap file in any ZX Spectrum, FPGA machine or emulator you like.
 * Key: **X** - Quits game (reset)
 
 
-## Assembly
+## Compile
 
 Assembly with Retro Virtual Machine assembler inside a ZX Spectrum 16K or 48k.
 
@@ -33,11 +33,6 @@ Assembly with Retro Virtual Machine assembler inside a ZX Spectrum 16K or 48k.
 asm parachute.asm
 ```
 
-and run at 32768.
-
-```
-RANDOMIZE USR 32768
-```
 
 ## Thanks
 
