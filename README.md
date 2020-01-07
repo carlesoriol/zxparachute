@@ -4,6 +4,9 @@ ZX Spectrum Parachute is a conversion of the nintendo all time classic parachute
 
 This conversion is done just for fun.
 
+All game is attributes based so except for the clock there are not a single change in the screen.
+
+![Alt text](test_stuff_and_references/attribute.png)
 
 Carles Oriol - Barcelona 2020
 carlesoriol@gmail.com
