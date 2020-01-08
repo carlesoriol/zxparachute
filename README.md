@@ -8,10 +8,13 @@ All game is attributes based so except for the clock there are not a single chan
 
 ![Alt text](test_stuff_and_references/attribute.png)
 
+get it at https://github.com/carlesoriol/zxparachute
+
 8/6/2020 - Version 0.2
 
 Carles Oriol - Barcelona 2020
 carlesoriol@gmail.com
+
 
 ## Play
 
