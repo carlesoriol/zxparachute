@@ -2,11 +2,13 @@
 
 ZX Spectrum Parachute is a conversion of the nintendo all time classic parachute gameandwatch to ZX Spectrum 16k.
 
-This conversion is done just for fun.
+This fan conversion is done non profit just for fun.
 
 All game is attributes based so except for the clock there are not a single change in the screen.
 
 ![Alt text](test_stuff_and_references/attribute.png)
+
+8/6/2020 - Version 0.2
 
 Carles Oriol - Barcelona 2020
 carlesoriol@gmail.com
@@ -36,6 +38,9 @@ Assembly with Retro Virtual Machine assembler inside a ZX Spectrum 16K or 48k.
 asm parachute.asm
 ```
 
+## To Do
+
+Implement Game B
 
 ## Thanks
 
@@ -45,6 +50,7 @@ asm parachute.asm
 * Thanks to my Nurieta for everything else in my life.
 
 ## Contributing
+
 Just made me know if you want to publish any changes or if you have any ideas
 
 ## License
