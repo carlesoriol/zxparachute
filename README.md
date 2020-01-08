@@ -6,7 +6,7 @@ This fan conversion is done non profit just for fun.
 
 All game is attributes based so except for the clock there are not a single change in the screen.
 
-![Alt text](test_stuff_and_references/attribute.png)
+![Alt text](test_stuff_and_references/attribs.png)
 
 get it at https://github.com/carlesoriol/zxparachute
 
