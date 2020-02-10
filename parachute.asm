@@ -265,6 +265,13 @@ parachute_saved:
 				inc hl
 				ld (score),hl
 
+				; limit score = 1000
+				ld bc, 0x3e8
+				sbc hl, bc
+				jr nz, parachute_saved_not1000				
+					ld (score),hl
+			parachute_saved_not1000:
+
 				; The following routine divides hl by c and places the quotient in hl and the remainder in a
 
 				ld a, l
@@ -487,8 +494,9 @@ start_game:
 				ld (playing), a				
 				ld (boatpos), a
 				
-				ld hl,0
+				ld hl,980
 				ld (score), hl
+				ld hl,0
 				ld (frame_counter), hl
 				ld (frame_counter+2), hl
 				ld (counter), hl
