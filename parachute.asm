@@ -274,6 +274,8 @@ parachute_saved:
 
 				; The following routine divides hl by c and places the quotient in hl and the remainder in a
 
+
+				ld hl,(score)				
 				ld a, l
 				sub a, 4
 				add a,18
