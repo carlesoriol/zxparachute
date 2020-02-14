@@ -494,9 +494,8 @@ start_game:
 				ld (playing), a				
 				ld (boatpos), a
 				
-				ld hl,980
-				ld (score), hl
 				ld hl,0
+				ld (score), hl
 				ld (frame_counter), hl
 				ld (frame_counter+2), hl
 				ld (counter), hl
