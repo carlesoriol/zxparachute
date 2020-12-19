@@ -52,6 +52,10 @@ parachute_step_index:	defb	0
 gamea_highcore	defw 0
 gameb_highcore	defw 0
 
+useloader		equ 1
+
+
+
 				org 0x4000
 fons:
 incbin 	"parachute_screen.scr"	
@@ -60,12 +64,25 @@ incbin 	"parachute_screen.scr"
 				
 main:				
 				ld sp, 0x8000
-
 				im 1
-				
 				xor a				; posem el marge negre
 				out	(#fe), a ;					
 				ld ($5C48), a	
+				
+
+				call swap_logo
+				call waitnokey
+				call waitkey
+				call waitnokey
+				
+				
+start_for_loader:		ld sp, 0x8000
+				im 1				
+				xor a				; posem el marge negre
+				out	(#fe), a ;					
+				ld ($5C48), a	
+
+				call swap_logo
 
 				ld hl, screen_start		; clear vars
 				ld de, screen_start+1
@@ -73,12 +90,6 @@ main:
 				xor a
 				ld (hl), a				
 				ldir
-
-				call swap_logo
-				call waitnokey
-				call waitkey
-				call waitnokey
-				call swap_logo
 																
 				call showallandhideforfun
 				call hideAll
@@ -147,6 +158,28 @@ main:
 
 			main_noplay:
 				call update_clock_dots		
+				
+				ld a, (counter+1)
+				and 1				
+				jr nz, anim_buttons_2
+					
+					ld c, PAPER_BLACK | YELLOW | BRIGHT
+					ld a, i_button_a
+					call IImageAttributes
+					ld c, PAPER_BLACK | BLACK | BRIGHT
+					ld a, i_button_b
+					call IImageAttributes
+					jr fi_anim_buttons
+					
+				anim_buttons_2:
+					ld c, PAPER_BLACK | BLACK | BRIGHT
+					ld a, i_button_a
+					call IImageAttributes
+					ld c, PAPER_BLACK | YELLOW | BRIGHT
+					ld a, i_button_b
+					call IImageAttributes
+				
+			fi_anim_buttons:
 
 				ld b, KEYSEG_ASDFG
 				ld d, KEY_A
@@ -174,6 +207,8 @@ main:
 			
 			game_keys_cont2:
 
+	
+					
 			main_cont:
 				call update_screen														
 				
@@ -466,22 +501,24 @@ start_machine:
 				xor a
 				ld (i_am), a
 
-				ld c, PAPER_BLACK | YELLOW | BRIGHT
-				ld a, i_button_a
-				call IImageAttributes
-				ld a, i_button_b
-				call IImageAttributes
+				call show_buttons
 
 
 				ret
 
-start_game:
-				call hideAll
-				ld c, 0
-				ld a, i_button_a
-				call IImageAttributes
+
+hide_buttons:	ld c, PAPER_BLACK | BLACK | BRIGHT				
+				jr show_buttons_i
+show_buttons:	ld c, PAPER_BLACK | YELLOW | BRIGHT
+show_buttons_i:	ld a, i_button_a
+				call IImageAttributes				
 				ld a, i_button_b
 				call IImageAttributes
+				ret
+
+start_game:
+				call hideAll
+				call hide_buttons
 				
 				ld a, 1												
 				ld (i_monkey), a
@@ -493,6 +530,7 @@ start_game:
 				ld (i_digit_3), a				
 				ld (i_boat_middle), a
 				ld (max_parachutes), a
+
 				ld (playing), a				
 				ld (boatpos), a
 				
@@ -508,7 +546,7 @@ start_game:
 				ld (i_am), a
 				ld (i_pm), a
 				ld (i_digit_separator), a
-				
+				ld (num_parachutes), a				
 				
 				call start_live
 				ret		
@@ -830,6 +868,7 @@ include 'libs/sound_lib.asm'
 
 
 include 'libs/interrupt_lib_16k.asm' ; always include last line or before org	
+
 
 
 run main
