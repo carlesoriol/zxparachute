@@ -17,7 +17,9 @@ gcc bin2tap.c -o bin2tap
 ./bin2tap  d7c7c_int.bin int.tap int 31868 n
 ./bin2tap  d4000_data.bin data.tap data 23755 n
 
-cat loader.tap data.tap int.tap > parachute.tap
+cat loader.tap data.tap int.tap > bin/parachute.tap
+tape2wav bin/parachute.tap bin/parachute.wav
+
 
 #rm screen.tap data.tap int.tap loader.tap
 
