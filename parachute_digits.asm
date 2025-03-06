@@ -1,6 +1,3 @@
-
-
-
 ; bc = coordinates
 ; a = digit
 
@@ -14,7 +11,7 @@ pinta_digit:
 			ld d, 6
 			ld ix, digits_def
 						
-		pinta_digit_loop:
+pinta_digit_loop:
 			
 			push af
 			push de
@@ -35,11 +32,11 @@ pinta_digit:
 					call pintaspriteOr		
 					jr pinta_digit_cont
 					
-				pinta_digit_neg:				
+pinta_digit_neg:				
 					call BCaddDE_simple													
 					call pintaspriteMask
 					
-		pinta_digit_cont:			
+pinta_digit_cont:			
 			pop bc
 			pop de					
 			pop af
@@ -72,7 +69,7 @@ BCaddDE_simple:
 			ret
 
 
-align 16
+	align 0x8
 
 segments_digit_0:	defb	%00111111
 segments_digit_1:	defb	%00000110

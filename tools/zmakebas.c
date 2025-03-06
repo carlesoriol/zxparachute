@@ -8,25 +8,25 @@
  * I guess that's what comes from hacking something into existence... :-/
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#ifdef HAVE_GETOPT
-#include <unistd.h>
-#endif
-#include <math.h>
-#include <ctype.h>
+0xinclude <stdio.h>
+0xinclude <string.h>
+0xinclude <stdlib.h>
+0xifdef HAVE_GETOPT
+0xinclude <unistd.h>
+0xendif
+0xinclude <math.h>
+0xinclude <ctype.h>
 
 
-#if defined(__TURBOC__) && !defined(MSDOS)
-#define MSDOS
-#endif
+0xif defined(__TURBOC__) && !defined(MSDOS)
+0xdefine MSDOS
+0xendif
 
-#define VERSION          	"1.5"
-#define DEFAULT_OUTPUT		"out.tap"
-#define REM_TOKEN_NUM		234
-#define BIN_TOKEN_NUM		196
-#define DEFFN_TOKEN_NUM     206
+0xdefine VERSION          	"1.5"
+0xdefine DEFAULT_OUTPUT		"out.tap"
+0xdefine REM_TOKEN_NUM		234
+0xdefine BIN_TOKEN_NUM		196
+0xdefine DEFFN_TOKEN_NUM     206
 
 /* tokens are stored (and looked for) in reverse speccy-char-set order,
  * to avoid def fn/fn and go to/to screwups. There are two entries for
@@ -35,9 +35,9 @@
  * this I've made is that randomize can be entered with -ize or -ise.
  */
 char *tokens[] = {
-    "%listen #", "%listen#",
-    "%accept #", "%accept#",
-    "%close #", "%close#",
+    "%listen 0x", "%listen0x",
+    "%accept 0x", "%accept0x",
+    "%close 0x", "%close0x",
     "-----", "",
     "copy", "",
     "return", "",
@@ -82,8 +82,8 @@ char *tokens[] = {
     "beep", "",
     "verify", "",
     "merge", "",
-    "close #", "close#",
-    "open #", "open#",
+    "close 0x", "close0x",
+    "open 0x", "open0x",
     "erase", "",
     "move", "",
     "format", "",
@@ -214,17 +214,17 @@ char *tokens81[]={
  * to be output on a non-seekable file (stdout).
  */
 
-#ifdef MSDOS
-#define MAX_LABELS  500
+0xifdef MSDOS
+0xdefine MAX_LABELS  500
 unsigned char filebuf[32768];
 char infile[256], outfile[256];
-#else
-#define MAX_LABELS  2000
+0xelse
+0xdefine MAX_LABELS  2000
 unsigned char filebuf[49152];
 char infile[1024], outfile[1024];
-#endif
+0xendif
 
-#define MAX_LABEL_LEN	16
+0xdefine MAX_LABEL_LEN	16
 
 /* this is needed for tap files too: */
 unsigned char headerbuf[0x74];
@@ -241,7 +241,7 @@ int label_lines[MAX_LABELS];
 unsigned char startlabel[MAX_LABEL_LEN + 1];
 
 
-#ifndef HAVE_GETOPT
+0xifndef HAVE_GETOPT
 
 /* ok, well here's a crude getopt clone I wrote a few years ago.
  * It's not great, but it's good enough for zmakebas at least.
@@ -289,7 +289,7 @@ int getopt(int argc, char *argv[], char *optstring) {
 
     return (optopt); /* return the found option */
 }
-#endif	/* !HAVE_GETOPT */
+0xendif	/* !HAVE_GETOPT */
 
 /* This routine converts normal ASCII code to special code used in ZX81.
  */
@@ -640,11 +640,11 @@ int grok_block(unsigned char *ptr, int textlinenum) {
 }
 
 int main(int argc, char *argv[]) {
-#ifdef MSDOS
+0xifdef MSDOS
     static unsigned char buf[512], lcasebuf[512], outbuf[1024];
-#else
+0xelse
     static unsigned char buf[2048], lcasebuf[2048], outbuf[4096];
-#endif
+0xendif
     int f, toknum, toklen, linenum, linelen, in_quotes, in_rem, in_deffn, in_spec, lastline;
     char **tarrptr;
     unsigned char *ptr, *ptr2, *linestart, *outptr, *remptr, *fileptr, *asciiptr;
@@ -692,7 +692,7 @@ int main(int argc, char *argv[]) {
             /* allow for (shell-style) comments which don't appear in the program,
              * and also ignore blank lines.
              */
-            if (buf[1] == 0 || buf[1] == '#') continue;
+            if (buf[1] == 0 || buf[1] == '0x') continue;
 
             /* check for line continuation */
             while (buf[strlen(buf) - 1] == '\\') {

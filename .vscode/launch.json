@@ -1,0 +1,90 @@
+{
+    "configurations": [
+        /*{
+            "type": "dezog",
+            "request": "launch",
+            "name": "CSpect",
+            "remoteType": "cspect",
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "sjasmplus": [
+                {
+                    "path": "Assembler list or sld file"
+                }
+            ],
+            "commandsAfterLaunch": [
+                "-logpoint enable",
+                "-assertion enable"
+            ],
+            "startAutomatically": false,
+            "rootFolder": "${workspaceFolder}",
+            "load": ".nex or .sna file to load",
+            "topOfStack": " top of stack / label name"
+        },*/
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "ZEsarUX",
+            "remoteType": "zrcp",
+            "sjasmplus": [
+                {
+                    "path": "bin/${fileBasenameNoExtension}.sld"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10,
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+                "-logpoint enable",
+                "-assertion enable",
+                "-wpmem enable"
+            ],
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stack_top",
+            "load": "bin/${fileBasenameNoExtension}.sna",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+    {
+        "type": "dezog",
+        "request": "launch",
+        "name": "zsim",
+        "remoteType": "zsim",
+        "zsim": {
+            "Z80N": true,
+            "visualMemory": true,
+            "memoryModel": "ZX48K",//"ZXNEXT",
+            "ulaScreen": true,
+            "zxBorderWidth": 20,
+            "vsyncInterrupt": true,
+            "zxKeyboard": true,
+            "zxBeeper": true
+        },
+        "disassemblerArgs": {
+            "esxdosRst": true
+        },
+        "sjasmplus": [
+            {
+                "path": "bin/${fileBasenameNoExtension}.sld"
+            }
+        ],
+        "commandsAfterLaunch": [
+            "-logpoint enable",
+            "-assertion enable",
+            "-wpmem enable"
+        ],
+        "startAutomatically": false,
+        "rootFolder": "${workspaceFolder}",
+        "load": "bin/${fileBasenameNoExtension}.sna",
+        //"topOfStack": " top of stack / label name"
+    },
+    {}
+    ]
+}

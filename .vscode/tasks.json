@@ -1,0 +1,46 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "sjasmplus",
+            "type": "shell",
+            "command": "sjasmplus",
+            "args": [
+                "--fullpath",
+                "--lst",
+                //"--zxnext",
+                "--sld=${fileDirname}/bin/${fileBasenameNoExtension}.sld",
+                "${file}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "RetroVirtualMachine",
+            "type": "shell",
+            "command": "/home/carles/opt/rvm/2.0/RetroVirtualMachine",
+            "args": [
+                "-b=zx48k",
+                "-snapshot",
+                "bin/${fileBasenameNoExtension}.sna"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+        },
+        {
+            "label": "fuse emulator",
+            "type": "shell",
+            "command": "fuse-gtk",
+            "args": [
+                "bin/${fileBasenameNoExtension}.sna"
+            ],
+        },
+    ]
+}

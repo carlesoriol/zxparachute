@@ -15,10 +15,10 @@ parachute_keys:
 					
 						jr moveleft_cont
 				
-				nomoveleft:
+nomoveleft:
 					xor a					
 				
-				moveleft_cont:
+moveleft_cont:
 					ld (left_debounce),a
 					
 					
@@ -36,10 +36,10 @@ parachute_keys:
 					
 						jr moveright_cont
 				
-				nomoveright:
+nomoveright:
 					xor a					
 				
-				moveright_cont:
+moveright_cont:
 					ld (right_debounce),a
 					
 			
@@ -47,7 +47,7 @@ parachute_keys:
 
 waitnokey:
 				xor a
-				in a,(#fe)
+				in a,(0xfe)
 				cpl
 				and %00111111
 				jr	nz, waitnokey
@@ -55,7 +55,7 @@ waitnokey:
 
 waitkey:
 				xor a
-				in a,(#fe)
+				in a,(0xfe)
 				cpl
 				and %00111111
 				jr	z, waitkey
@@ -65,7 +65,7 @@ waitkey:
 ; d= mask
 checkkey:
 				xor a
-				ld c, #fe
+				ld c, 0xfe
 				in a,(c)
 				cpl
 				and d

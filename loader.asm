@@ -2,20 +2,20 @@
 	
 	; load main (screen+program)
 		
-	ld ix,#4000
+	ld ix,0x4000
 	ld de,11692
-	ld a, #ff
+	ld a, 0xff
 	scf
-	call #0556
+	call 0x0556
 	
 	; load interrupt table
 		
-	ld ix,#7C7C
-	ld de,#186
-	ld a, #ff
+	ld ix,0x8000
+	ld de,0x186
+	ld a, 0xff
 	scf
-	call #0556
+	call 0x0556
 	
-	jp #5ce2
+	jp 0x5ce2
 	
 	

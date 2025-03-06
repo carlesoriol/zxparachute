@@ -5,9 +5,9 @@
 */
 
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+0xinclude <stdio.h>
+0xinclude <string.h>
+0xinclude <stdlib.h>
 
 unsigned char headerbuf[0x74];
 

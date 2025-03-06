@@ -65,12 +65,12 @@ pintaspriteOr:
 				ld a, (hl)				
 				inc hl
 													
-			pintaspriteOr_loopy:
+pintaspriteOr_loopy:
 				push de
-			pintaspriteOr_keepx:
+pintaspriteOr_keepx:
 				ld b, 0x00			; dynamically modified
 				ex af, af'
-			pintaspriteOr_loopx:
+pintaspriteOr_loopx:
 				ld a,(de)
 				ld c,(hl)
 				or c
@@ -103,12 +103,12 @@ pintaspriteMask:
 				ld a, (hl)
 				inc hl
 													
-			pintaspriteMask_loopy:
+pintaspriteMask_loopy:
 				push de
-			pintaspriteMask_keepx:
+pintaspriteMask_keepx:
 				ld b, 0x00			; dynamically modified
 				ex af, af'
-			pintaspriteMask_loopx:
+pintaspriteMask_loopx:
 				ld a,(hl)
 				cpl
 				ld c, a

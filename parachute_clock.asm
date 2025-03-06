@@ -13,16 +13,16 @@ update_clock_dots:
 					ld (i_digit_separator),a 
 					ret
 
-			update_clock_dots_time:
+update_clock_dots_time:
 				ld a, (time_50s)				
 				cp 25				
 				jr c, update_clock_dots_show
-			update_clock_dots_cont2:
+update_clock_dots_cont2:
 					xor a
 					jr update_clock_dots_cont
-			update_clock_dots_show:
+update_clock_dots_show:
 				ld a, 1		
-			update_clock_dots_cont:	
+update_clock_dots_cont:	
 				ld (i_digit_separator),a 
 				ret
 				
@@ -42,7 +42,7 @@ update_clock:
 				ld e, 10
 				call div_d_e		; reminder in a
 				
-				ld bc,#1850
+				ld bc,0x1850
 				call pinta_digit
 				
 				ld a, (time_minute)
@@ -51,7 +51,7 @@ update_clock:
 				call div_d_e		; quotient in d 
 				ld a, d
 				
-				ld bc,#1840
+				ld bc,0x1840
 				call pinta_digit
 				
 				ld a, (time_hour)		; 12 h get a
@@ -64,7 +64,7 @@ update_clock:
 				ld e, 10
 				call div_d_e		; reminder in a
 				
-				ld bc,#1828
+				ld bc,0x1828
 				call pinta_digit
 				
 				pop af
@@ -73,7 +73,7 @@ update_clock:
 				call div_d_e		; quotient in d 
 				ld a, d
 				
-				ld bc,#1818
+				ld bc,0x1818
 				call pinta_digit
 				
 				ld a, (time_hour)		; 12 h get a
@@ -89,7 +89,7 @@ update_clock:
 					ld (i_pm), a					
 					ret
 
-			update_clock_am:
+update_clock_am:
 					xor a
 					ld (i_pm), a
 					inc a
@@ -111,11 +111,11 @@ clock_keys:
                     cp 24
                     jr nz, clock_keys_hour_cont
                         xor a
-            clock_keys_hour_cont:
+clock_keys_hour_cont:
                     ld (time_hour), a
 
 
-            clock_keys_minute:  
+clock_keys_minute:  
                 ld b, KEYSEG_MNB
 				ld d, KEY_M
 				call checkkey
@@ -126,10 +126,10 @@ clock_keys:
                     cp 60
                     jr nz, clock_keys_minute_cont
                         xor a
-            clock_keys_minute_cont:
+clock_keys_minute_cont:
                     ld (time_minute), a
 
-            clock_keys_cont:
+clock_keys_cont:
                     ld a, h
                     or a
                     ret z
@@ -144,7 +144,7 @@ update_score:
 				call div_hl_c
 
 				push hl				
-				ld bc,#1850
+				ld bc,0x1850
 				call pinta_digit
 				pop hl
 
@@ -152,12 +152,12 @@ update_score:
 				call div_hl_c
 
 				push hl				
-				ld bc,#1840
+				ld bc,0x1840
 				call pinta_digit
 				pop hl
 
 				ld a, l
-				ld bc,#1828
+				ld bc,0x1828
 				call pinta_digit
 
 				xor a

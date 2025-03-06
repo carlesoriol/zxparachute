@@ -5,7 +5,7 @@ update_screen:
 				ld de, i_screen
 				ld hl, i_screen_last
 
-		update_screen_loop:
+update_screen_loop:
 				inc a						; there's no object 0
 				cp number_of_images
 				ret z
@@ -30,16 +30,16 @@ update_screen:
 							call IhideImage
 							jr update_screen_show_cont
 
-						update_screen_show:	
+update_screen_show:	
 							ld a,c						; show
 							call IshowImage
 
-						update_screen_show_cont:
+update_screen_show_cont:
 
 						pop de						
 						pop hl
 				
-					update_screen_no_change:
+update_screen_no_change:
 				pop af
 
 				jr update_screen_loop
@@ -56,7 +56,7 @@ getImageAttribsPointer:
 				ld l, a
 				jr nc, getImageAttribsPointer_cont
 					inc h
-			getImageAttribsPointer_cont:
+getImageAttribsPointer_cont:
 				ld e, (hl)
 				inc hl
 				ld d, (hl)
@@ -68,10 +68,10 @@ showAll:		ld a, 1
 hideAll:		
 				xor a
 								
-			i_screen_a_to_all:
+i_screen_a_to_all:
 				ld b, (i_screen_end - i_screen) - 1
 			
-			hideAll_loop:
+hideAll_loop:
 				ld hl, i_screen
 				ld l, b				; i_screen 256 aligned
 				ld (hl), a
@@ -85,8 +85,8 @@ hideAll:
 ; modifica hl, de, b, a
 IhideImage:		call getImageAttribsPointer
 				ex de, hl
-		IhideImage_item:
-		hideImage_loop:		
+IhideImage_item:
+hideImage_loop:		
 				ld e, (hl)
 				inc hl
 				ld d, (hl)
@@ -113,8 +113,8 @@ IhideImage:		call getImageAttribsPointer
 ; modifica hl, de, a
 IshowImage:		call getImageAttribsPointer						
 				ex de, hl
-		IshowImage_item:		
-		showImage_loop:		
+IshowImage_item:		
+showImage_loop:		
 				ld e, (hl)
 				inc hl
 				ld d, (hl)
@@ -137,8 +137,8 @@ IshowImage:		call getImageAttribsPointer
 IImageAttributes:
 				call getImageAttribsPointer						
 				ex de, hl
-		IImageAttributes_item:		
-		IImageAttributes_loop:		
+IImageAttributes_item:		
+IImageAttributes_loop:		
 				ld e, (hl)
 				inc hl
 				ld d, (hl)
@@ -162,10 +162,10 @@ showImage:
 			ld (showImage_restore_a+1), a	
 							
 			ld a, 1
-			showImage_index:
+showImage_index:
 			ld (i_screen), a	
 		
-		showImage_restore_a:		
+showImage_restore_a:		
 			ld a, 0		
 
 			ret
@@ -179,10 +179,10 @@ hideImage:
 			ld (hideImage_restore_a+1), a	
 					
 			xor a
-			hideImage_index:		
+hideImage_index:		
 			ld (i_screen), a	
 		
-		hideImage_restore_a:		
+hideImage_restore_a:		
 			ld a, 0		
 
 			ret

@@ -20,9 +20,9 @@ L03B5:  DI                      ; Disable Interrupts so they don't disturb timin
 
         ;AND     $38             ; bits 5..3 contain border colour
         ;RRCA                    ; border colour bits moved to 2..0
-        ;RRCA                    ;   to match border bits on port #FE
+        ;RRCA                    ;   to match border bits on port 0xFE
         ;RRCA                    ;
-        ;OR       $08            ; bit 3 set (tape output bit on port #FE)
+        ;OR       $08            ; bit 3 set (tape output bit on port 0xFE)
         ld a, $08
                                 ;   for loud sound output
 ;; BE-IX+3
@@ -49,7 +49,7 @@ L03D6:  DEC     C        ;(4)   ; timing loop for duration of
         XOR     $10      ;(7)   ; toggle output beep bit
         OUT     ($FE),A  ;(11)  ; output pulse
         LD      B,H      ;(4)   ; B = coarse part of tone period
-        LD      C,A      ;(4)   ; save port #FE output byte
+        LD      C,A      ;(4)   ; save port 0xFE output byte
         BIT     4,A      ;(8)   ; if new output bit is high, go
         JR      NZ,L03F2 ;(12/7);   to BE-AGAIN
 
@@ -57,7 +57,7 @@ L03D6:  DEC     C        ;(4)   ; timing loop for duration of
         OR      E        ;(4)   ;   (low->low). if cycle countdown = 0
         JR      Z,L03F6  ;(12/7);   go to BE-END
 
-        LD      A,C      ;(4)   ; restore output byte for port #FE
+        LD      A,C      ;(4)   ; restore output byte for port 0xFE
         LD      C,L      ;(4)   ; C = medium part of tone period
         DEC     DE       ;(6)   ; decrement cycle count
         JP      (IX)     ;(8)   ; do another cycle

@@ -8,7 +8,7 @@ include "../libs/screen_macros.asm"
 				org 0x8000
 main:				
 				ld a, 0				; posem el marge negre
-				out	(#fe), a ;	
+				out	(0xfe), a ;	
 				ld a, 0
 				ld ($5C48), a	
 				
@@ -55,7 +55,7 @@ main:
 				call repaintAttributes
 														
 				xor a
-				in a,(#fe)
+				in a,(0xfe)
 				cpl
 				and %00111111
 				jr	z, main_loop
@@ -152,7 +152,7 @@ repaintAttributes:
 				
 waitforkey:
 				xor a
-				in a,(#fe)
+				in a,(0xfe)
 				cpl
 				and %00111111
 				jr	z, waitforkey
@@ -160,7 +160,7 @@ waitforkey:
 
 waitnokey:
 				xor a
-				in a,(#fe)
+				in a,(0xfe)
 				cpl
 				and %00111111
 				jr	nz, waitnokey

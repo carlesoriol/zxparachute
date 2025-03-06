@@ -1,0 +1,80 @@
+# file opened: /home/carles/Projectes/zx/parachute/make.sh
+/home/carles/Projectes/zx/parachute/make.sh(1): error: Invalid labelname: #!/bin/bash
+ 1    0000              #!/bin/bash
+ 2    0000
+/home/carles/Projectes/zx/parachute/make.sh(3): error: Unrecognized instruction: parachute.asm
+ 3    0000              sjasmplus parachute.asm
+ 4    0000
+/home/carles/Projectes/zx/parachute/make.sh(5): error: Unexpected: (stat -c%s "bin/parachutecode.bin")
+ 5    0000              file_size=$(stat -c%s "bin/parachutecode.bin")
+/home/carles/Projectes/zx/parachute/make.sh(6): error: Unexpected: ((file_size % 256))
+ 6    0000              SIZELO=$((file_size % 256))
+/home/carles/Projectes/zx/parachute/make.sh(7): error: Unexpected: ((file_size / 256))
+ 7    0000              SIZEHI=$((file_size / 256))
+ 8    0000
+/home/carles/Projectes/zx/parachute/make.sh(9): error: Unrecognized instruction: > parachute.bas <<EOF
+ 9    0000              cat > parachute.bas <<EOF
+/home/carles/Projectes/zx/parachute/make.sh(10): error: Unrecognized instruction: border 0
+10    0000              10 border 0
+/home/carles/Projectes/zx/parachute/make.sh(10): error: Unrecognized instruction: paper 0
+10    0000                paper 0
+/home/carles/Projectes/zx/parachute/make.sh(10): error: Unrecognized instruction: ink 0
+10    0000                ink 0
+/home/carles/Projectes/zx/parachute/make.sh(10): error: Unrecognized instruction: clear val "65535"
+10    0000                clear val "65535"
+/home/carles/Projectes/zx/parachute/make.sh(10): error: Unrecognized instruction: cls
+10    0000                cls
+/home/carles/Projectes/zx/parachute/make.sh(11): error: Unrecognized instruction: for c=0 to 28
+11    0000              20 for c=0 to 28
+/home/carles/Projectes/zx/parachute/make.sh(12): error: Unrecognized instruction: read a
+12    0000              30 read a
+/home/carles/Projectes/zx/parachute/make.sh(12): error: Unrecognized instruction: poke 30000+c,a
+12    0000                poke 30000+c,a
+/home/carles/Projectes/zx/parachute/make.sh(13): error: Unrecognized instruction: next c
+13    0000              40 next c
+/home/carles/Projectes/zx/parachute/make.sh(14): error: Unrecognized instruction: randomize usr 30000
+14    0000              50 randomize usr 30000
+/home/carles/Projectes/zx/parachute/make.sh(15): error: Unrecognized instruction: data 221,33,0,64
+15    0000              60 data 221,33,0,64
+/home/carles/Projectes/zx/parachute/make.sh(16): error: Unrecognized instruction: data 17,0,27
+16    0000              70 data 17,0,27
+/home/carles/Projectes/zx/parachute/make.sh(17): error: Unrecognized instruction: data 62,255
+17    0000              80 data 62,255
+/home/carles/Projectes/zx/parachute/make.sh(18): error: Unrecognized instruction: data 55
+18    0000              90 data 55
+/home/carles/Projectes/zx/parachute/make.sh(19): error: Unrecognized instruction: data 205,86,5
+19    0000              100 data 205,86,5
+/home/carles/Projectes/zx/parachute/make.sh(20): error: Unrecognized instruction: data 221,33,0,128
+20    0000              160 data 221,33,0,128
+/home/carles/Projectes/zx/parachute/make.sh(21): error: Unrecognized instruction: data 17,$SIZELO, $SIZEHI
+21    0000              170 data 17,$SIZELO, $SIZEHI
+/home/carles/Projectes/zx/parachute/make.sh(22): error: Unrecognized instruction: data 62,255
+22    0000              180 data 62,255
+/home/carles/Projectes/zx/parachute/make.sh(23): error: Unrecognized instruction: data 55
+23    0000              190 data 55
+/home/carles/Projectes/zx/parachute/make.sh(24): error: Unrecognized instruction: data 205,86,5
+24    0000              200 data 205,86,5
+/home/carles/Projectes/zx/parachute/make.sh(25): error: Unrecognized instruction: data 195,0,128
+25    0000              300 data 195,0,128
+26    0000              EOF
+27    0000
+/home/carles/Projectes/zx/parachute/make.sh(28): error: Invalid labelname: /tools/zmakebas
+/home/carles/Projectes/zx/parachute/make.sh(28): error: Unrecognized instruction: -a 10 -n "ZXParachute" -o bin/loader.tap parachute.bas
+28    0000              ./tools/zmakebas -a 10 -n "ZXParachute" -o bin/loader.tap parachute.bas
+/home/carles/Projectes/zx/parachute/make.sh(29): error: Invalid labelname: /tools/bin2tap
+/home/carles/Projectes/zx/parachute/make.sh(29): error: Unrecognized instruction: bin/screen.bin bin/screen.tap screen 16384 n
+29    0000              ./tools/bin2tap  bin/screen.bin bin/screen.tap screen 16384 n
+/home/carles/Projectes/zx/parachute/make.sh(30): error: Invalid labelname: /tools/bin2tap
+/home/carles/Projectes/zx/parachute/make.sh(30): error: Unrecognized instruction: bin/parachutecode.bin bin/parachutecode.tap data 32768 n
+30    0000              ./tools/bin2tap  bin/parachutecode.bin bin/parachutecode.tap data 32768 n
+31    0000
+/home/carles/Projectes/zx/parachute/make.sh(32): error: Unrecognized instruction: bin/loader.tap bin/screen.tap bin/parachutecode.tap > bin/parachute.tap
+32    0000              cat bin/loader.tap bin/screen.tap bin/parachutecode.tap > bin/parachute.tap
+/home/carles/Projectes/zx/parachute/make.sh(33): error: Invalid labelname: #tape2wav
+/home/carles/Projectes/zx/parachute/make.sh(33): error: Unrecognized instruction: bin/parachute.tap bin/parachute.wav
+33    0000              #tape2wav bin/parachute.tap bin/parachute.wav
+34    0000
+/home/carles/Projectes/zx/parachute/make.sh(35): error: Invalid labelname: #/home/carles/opt/rvm/2.0/RetroVirtualMachine
+/home/carles/Projectes/zx/parachute/make.sh(35): error: Unrecognized instruction: -boot=zx48k -i bin/parachute.tap -play -c='j ""\n'
+35    0000              #/home/carles/opt/rvm/2.0/RetroVirtualMachine -boot=zx48k -i bin/parachute.tap -play -c='j ""\n'
+# file closed: /home/carles/Projectes/zx/parachute/make.sh

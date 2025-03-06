@@ -1,0 +1,3073 @@
+# file opened: /home/carles/Projectes/zx/parachute/parachute.asm
+  1   0000              	if 1
+  2   0000
+  3   0000              	        DEVICE ZXSPECTRUM48
+  4   0000                          SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION
+  5   0000              	else
+  6   0000 ~            			print pink,"Compiling RPS DUEL\n"
+  7   0000              	endif
+  8   0000
+  9   0000              stack_top:      equ 0xf9ff
+ 10   0000
+ 11   0000              	include "libs/screen_macros.asm"
+# file opened: /home/carles/Projectes/zx/parachute/libs/screen_macros.asm
+  1+  0000
+  2+  0000
+  3+  0000              screen_width_pixels		equ 256		; 0x100
+  4+  0000              screen_height_pixels	equ 192		; 0xc0
+  5+  0000              screen_width_chars		equ 32		; 0x20
+  6+  0000              screen_height_chars		equ 24		; 0x18
+  7+  0000
+  8+  0000              screen_start			equ 0x4000
+  9+  0000
+ 10+  0000              screen_size				equ (screen_width_chars * screen_height_pixels)
+ 11+  0000              screen3_size			equ (screen_width_chars * screen_height_pixels / 3) ; 0x800
+ 12+  0000
+ 13+  0000              screen_start_2_3		equ (screen_start + screen3_size)
+ 14+  0000              screen_start_3_3		equ (screen_start + screen3_size * 2)
+ 15+  0000
+ 16+  0000              linedif_in3				equ 256	; distance from one pointer in screen to inferior next in 1/3 block
+ 17+  0000
+ 18+  0000
+ 19+  0000              attributes_start		equ 0x5800		; 22528
+ 20+  0000              attr_start				equ attributes_start
+ 21+  0000              attributes_length		equ (screen_width_chars * screen_height_chars)
+ 22+  0000              attributes_size			equ attributes_length
+ 23+  0000
+ 24+  0000              full_screen_size		equ (screen_size + attributes_length)
+ 25+  0000
+ 26+  0000              BLACK					equ %000000
+ 27+  0000              BLUE					equ %000001
+ 28+  0000              RED						equ %000010
+ 29+  0000              MAGENTA					equ %000011
+ 30+  0000              GREEN					equ %000100
+ 31+  0000              CYAN					equ %000101
+ 32+  0000              YELLOW					equ %000110
+ 33+  0000              WHITE					equ %000111
+ 34+  0000
+ 35+  0000              PAPER_BLACK				equ (BLACK << 3)
+ 36+  0000              PAPER_BLUE				equ (BLUE << 3)
+ 37+  0000              PAPER_RED				equ (RED << 3)
+ 38+  0000              PAPER_MAGENTA			equ (MAGENTA << 3)
+ 39+  0000              PAPER_GREEN				equ (GREEN << 3)
+ 40+  0000              PAPER_CYAN				equ (CYAN << 3)
+ 41+  0000              PAPER_YELLOW 			equ (YELLOW << 3)
+ 42+  0000              PAPER_WHITE				equ (WHITE << 3)
+ 43+  0000
+ 44+  0000              BRIGHT					equ %01000000
+ 45+  0000              NO_BRIGHT				equ %00000000
+ 46+  0000
+ 47+  0000              FLASH					equ	%10000000
+ 48+  0000              NO_FLASH				equ %00000000
+ 49+  0000
+ 50+  0000              ;Atributs	Bit	7		6		543		210
+ 51+  0000              ;            	FLASH	BRIGHT	PAPER	INK
+ 52+  0000
+ 53+  0000
+ 54+  0000
+ 55+  0000
+ 56+  0000              ; ULA Bit   7   6   5   4   3   2   1   0
+ 57+  0000              ; out  +-------------------------------+
+ 58+  0000              ; 0xFE  |   |   |   | E | M |   Border  |
+ 59+  0000              ;      +-------------------------------+
+ 60+  0000
+ 61+  0000
+ 62+  0000
+ 63+  0000              ; ref http://www.overtakenbyevents.com/lets-talk-about-the-zx-specrum-screen-layout/
+ 64+  0000
+ 65+  0000
+ 66+  0000
+ 67+  0000
+ 68+  0000
+ 69+  0000
+ 70+  0000
+ 71+  0000
+ 72+  0000
+# file closed: /home/carles/Projectes/zx/parachute/libs/screen_macros.asm
+ 12   0000              	include "libs/key_macros.asm"
+# file opened: /home/carles/Projectes/zx/parachute/libs/key_macros.asm
+  1+  0000
+  2+  0000              KEYSEG_MNB			equ %01111111
+  3+  0000              KEYSEG_LKJH			equ %10111111
+  4+  0000              KEYSEG_POIUY		equ %11011111
+  5+  0000              KEYSEG_09876		equ	%11101111
+  6+  0000              KEYSEG_12345		equ	%11110111
+  7+  0000              KEYSEG_QWERT		equ	%11111011
+  8+  0000              KEYSEG_ASDFG		equ %11111101
+  9+  0000              KEYSEG_ZXCV			equ	%11111110
+ 10+  0000
+ 11+  0000              KEY_CAPS_SHIFT		equ %00000001
+ 12+  0000              KEY_Z				equ %00000010
+ 13+  0000              KEY_X				equ %00000100
+ 14+  0000              KEY_C				equ %00001000
+ 15+  0000              KEY_V				equ %00010000
+ 16+  0000
+ 17+  0000              KEY_A				equ %00000001
+ 18+  0000              KEY_S				equ %00000010
+ 19+  0000              KEY_D				equ %00000100
+ 20+  0000              KEY_F				equ %00001000
+ 21+  0000              KEY_G				equ %00010000
+ 22+  0000
+ 23+  0000              KEY_Q				equ %00000001
+ 24+  0000              KEY_W				equ %00000010
+ 25+  0000              KEY_E				equ %00000100
+ 26+  0000              KEY_R				equ %00001000
+ 27+  0000              KEY_T				equ %00010000
+ 28+  0000
+ 29+  0000              KEY_1				equ %00000001
+ 30+  0000              KEY_2				equ %00000010
+ 31+  0000              KEY_3				equ %00000100
+ 32+  0000              KEY_4				equ %00001000
+ 33+  0000              KEY_5				equ %00010000
+ 34+  0000
+ 35+  0000              KEY_0				equ %00000001
+ 36+  0000              KEY_9				equ %00000010
+ 37+  0000              KEY_8				equ %00000100
+ 38+  0000              KEY_7				equ %00001000
+ 39+  0000              KEY_6				equ %00010000
+ 40+  0000
+ 41+  0000              KEY_P				equ %00000001
+ 42+  0000              KEY_O				equ %00000010
+ 43+  0000              KEY_I				equ %00000100
+ 44+  0000              KEY_U				equ %00001000
+ 45+  0000              KEY_Y				equ %00010000
+ 46+  0000
+ 47+  0000              KEY_ENTER			equ %00000001
+ 48+  0000              KEY_L				equ %00000010
+ 49+  0000              KEY_K				equ %00000100
+ 50+  0000              KEY_J				equ %00001000
+ 51+  0000              KEY_H				equ %00010000
+ 52+  0000
+ 53+  0000              KEY_SPACE 			equ %00000001
+ 54+  0000              KEY_SYMBOL_SHIFT 	equ %00000010
+ 55+  0000              KEY_M 				equ %00000100
+ 56+  0000              KEY_N 				equ %00001000
+ 57+  0000              KEY_B 				equ %00010000
+ 58+  0000
+# file closed: /home/carles/Projectes/zx/parachute/libs/key_macros.asm
+ 13   0000
+ 14   0000              				org 0x4000
+ 15   4000              fons:
+ 16   4000              	incbin 	"boot.scr"
+ 17   5B00              fi_fons:
+ 18   5B00              				org 0x8000
+ 19   8000              inici:
+ 20   8000              main:
+ 21   8000 31 FF FF     				ld sp, 0xFFFF
+ 22   8003 11 4B 84     				ld de, rpsinterrupt
+ 23   8006 CD 48 91     				call setInterruptTo
+ 24   8009
+ 25   8009 AF           				xor a				; posem el marge negre
+ 26   800A D3 FE        				out	(0xfe), a ;
+ 27   800C 32 48 5C     				ld ($5C48), a
+ 28   800F
+ 29   800F              				;call waitkey
+ 30   800F              				;call waitnokey
+ 31   800F CD F4 80     				call swap_logo
+ 32   8012
+ 33   8012 21 00 40     				ld hl, screen_start		; clear vars
+ 34   8015 11 01 40     				ld de, screen_start+1
+ 35   8018 01 1F 00     				ld bc, 31
+ 36   801B AF           				xor a
+ 37   801C 77           				ld (hl), a
+ 38   801D ED B0        				ldir
+ 39   801F
+ 40   801F CD 1C 84     				call showallandhideforfun
+ 41   8022 CD D0 84     				call hideAll
+ 42   8025 CD 94 84     				call update_screen
+ 43   8028 CD 28 90     				call randomize
+ 44   802B
+ 45   802B 3E 08        				ld a, 8
+ 46   802D 32 88 84     				ld (step_speed), a
+ 47   8030 AF           				xor a
+ 48   8031 32 76 84     				ld (playing), a
+ 49   8034
+ 50   8034 CD 07 8F     				call update_clock
+ 51   8037 CD 55 82     				call start_machine
+ 52   803A
+ 53   803A              main_loop:
+ 54   803A
+ 55   803A
+ 56   803A 21 6E 84     				ld hl, counter
+ 57   803D CD 8D 85     				call inc32counter
+ 58   8040
+ 59   8040 3A 86 84     				ld a, (step)
+ 60   8043 B7           				or a
+ 61   8044 28 1C        				jr z, main_no_step
+ 62   8046 AF           					xor a
+ 63   8047 32 86 84     					ld (step), a
+ 64   804A              					; every step
+ 65   804A
+ 66   804A 3A 76 84     					ld a,(playing)
+ 67   804D B7           					or a
+ 68   804E 28 0F        					jr z, step_noplay
+ 69   8050 CD 75 81     						call check_parachute_saved
+ 70   8053 CD DE 83     						call heli_blades
+ 71   8056 CD B3 83     						call shark_move
+ 72   8059 CD AB 81     						call move_parachutes
+ 73   805C CD 27 81     						call add_parachute_if_possible
+ 74   805F
+ 75   805F              step_noplay:
+ 76   805F CD 79 8F     					call clock_keys
+ 77   8062
+ 78   8062              main_no_step:
+ 79   8062
+ 80   8062 3A 89 84     				ld a, (second_update)
+ 81   8065 B7           				or a
+ 82   8066 28 10        				jr z, main_no_second
+ 83   8068 AF           					xor a
+ 84   8069 32 89 84     					ld (second_update), a
+ 85   806C              					; every second
+ 86   806C 3A 76 84     					ld a,(playing)
+ 87   806F B7           					or a
+ 88   8070 28 03        					jr z, second_noplay
+ 89   8072 CD 98 83     						call start_shark_if_need
+ 90   8075              second_noplay:
+ 91   8075 CD 07 8F     					call update_clock
+ 92   8078
+ 93   8078              main_no_second:
+ 94   8078
+ 95   8078 3A 76 84     				ld a,(playing)
+ 96   807B B7           				or a
+ 97   807C 28 05        				jr z, main_noplay
+ 98   807E
+ 99   807E CD 2F 85     					call parachute_keys
+100   8081 18 59        					jr main_cont
+101   8083
+102   8083              main_noplay:
+103   8083 CD E2 8E     				call update_clock_dots
+104   8086
+105   8086 3A 6F 84     				ld a, (counter+1)
+106   8089 E6 01        				and 1
+107   808B 20 10        				jr nz, anim_buttons_2
+108   808D
+109   808D 0E 46        					ld c, PAPER_BLACK | YELLOW | BRIGHT
+110   808F 3E 38        					ld a, low i_button_a
+111   8091 CD 05 85     					call IImageAttributes
+112   8094 0E 40        					ld c, PAPER_BLACK | BLACK | BRIGHT
+113   8096 3E 39        					ld a, low i_button_b
+114   8098 CD 05 85     					call IImageAttributes
+115   809B 18 0E        					jr fi_anim_buttons
+116   809D
+117   809D              anim_buttons_2:
+118   809D 0E 40        					ld c, PAPER_BLACK | BLACK | BRIGHT
+119   809F 3E 38        					ld a, low i_button_a
+120   80A1 CD 05 85     					call IImageAttributes
+121   80A4 0E 46        					ld c, PAPER_BLACK | YELLOW | BRIGHT
+122   80A6 3E 39        					ld a, low i_button_b
+123   80A8 CD 05 85     					call IImageAttributes
+124   80AB
+125   80AB              fi_anim_buttons:
+126   80AB
+127   80AB 06 FD        				ld b, KEYSEG_ASDFG
+128   80AD 16 01        				ld d, KEY_A
+129   80AF CD 76 85     				call checkkey
+130   80B2 28 0F        				jr z, game_keys_cont
+131   80B4 AF           					xor a
+132   80B5 32 7F 84     					ld (game), a
+133   80B8 CD 94 82     					call start_game
+134   80BB 3E 01        					ld a, 1
+135   80BD 32 0B 86     					ld (i_gamea), a
+136   80C0 CD DE 8F     					call move_parachute_sound
+137   80C3
+138   80C3              game_keys_cont:
+139   80C3
+140   80C3 06 7F        				ld b, KEYSEG_MNB
+141   80C5 16 10        				ld d, KEY_B
+142   80C7 CD 76 85     				call checkkey
+143   80CA 28 10        				jr z, game_keys_cont2
+144   80CC 3E 01        					ld a, 1
+145   80CE 32 7F 84     					ld (game), a
+146   80D1 CD 94 82     					call start_game
+147   80D4 3E 01        					ld a, 1
+148   80D6 32 0C 86     					ld (i_gameb), a
+149   80D9 CD DE 8F     					call move_parachute_sound
+150   80DC
+151   80DC              game_keys_cont2:
+152   80DC
+153   80DC
+154   80DC
+155   80DC              main_cont:
+156   80DC CD 94 84     				call update_screen
+157   80DF
+158   80DF 06 FE        				ld b, KEYSEG_ZXCV
+159   80E1 16 08        				ld d, KEY_C
+160   80E3 CD 76 85     				call checkkey
+161   80E6 C2 00 80     				jp	nz, main
+162   80E9
+163   80E9 06 FE        				ld b, KEYSEG_ZXCV
+164   80EB 16 04        				ld d, KEY_X
+165   80ED CD 76 85     				call checkkey
+166   80F0 CA 3A 80     				jp	z, main_loop
+167   80F3
+168   80F3              end_main_return:
+169   80F3 C7           				rst 0			; reset on exit
+170   80F4
+171   80F4
+172   80F4
+173   80F4
+174   80F4              swap_logo:
+175   80F4 21 00 58     				ld hl, attributes_start
+176   80F7 11 C6 8A     				ld de, logo
+177   80FA 01 00 03     				ld bc, attributes_size
+178   80FD
+179   80FD EB           				ex hl, de
+180   80FE ED B0        				ldir
+181   8100              				//call swap_memory
+182   8100
+183   8100 C9           				ret
+184   8101
+185   8101              ; hl starting pos, b len
+186   8101              ; move bytes
+187   8101              ; modifies de, hl, a, b
+188   8101              scroll_bytes:
+189   8101 54           				ld d,h
+190   8102 5D           				ld e,l
+191   8103              scroll_bytes_loop:
+192   8103 1B           				dec de
+193   8104 1A           				ld a,(de)
+194   8105 77           				ld (hl), a
+195   8106 2B           				dec hl
+196   8107 10 FA        				djnz scroll_bytes_loop
+197   8109 36 00        				ld (hl), 0
+198   810B C9           				ret
+199   810C
+200   810C
+201   810C
+202   810C              ; column in a
+203   810C              add_parachute:
+204   810C 21 17 86     				ld hl, i_parachute_1_1
+205   810F FE 01        				cp 1
+206   8111 20 03        				jr nz, $+5
+207   8113 21 1E 86     					ld hl, i_parachute_2_1
+208   8116 FE 02        				cp 2
+209   8118 20 03        				jr nz, $+5
+210   811A 21 24 86     					ld hl, i_parachute_3_1
+211   811D
+212   811D 36 01        				ld (hl), 1
+213   811F
+214   811F CD DE 8F     				call move_parachute_sound
+215   8122
+216   8122 21 8D 84     				ld hl, num_parachutes
+217   8125 34           				inc (hl)
+218   8126
+219   8126 C9           				ret
+220   8127
+221   8127              ; a= current row
+222   8127              add_parachute_if_possible:
+223   8127 3A 8C 84     				ld a, (max_parachutes)
+224   812A 47           				ld b, a
+225   812B 3A 8D 84     				ld a, (num_parachutes)
+226   812E B8           				cp b
+227   812F D0           				ret nc
+228   8130
+229   8130
+230   8130 CD 14 90     				call random
+231   8133 FE C0        				cp 0xc0
+232   8135 D8           				ret c
+233   8136
+234   8136 3A 8F 84     				ld a, (parachute_step_index)
+235   8139 E6 03        				and %11
+236   813B FE 03        				cp %11
+237   813D C8           				ret z
+238   813E
+239   813E CD 0C 81     				call add_parachute
+240   8141
+241   8141 C9           				ret
+242   8142
+243   8142              parachute_saved:
+244   8142 2A 7B 84     				ld hl,(score)
+245   8145 23           				inc hl
+246   8146 22 7B 84     				ld (score),hl
+247   8149
+248   8149              				; limit score = 1000
+249   8149 01 E8 03     				ld bc, 0x3e8
+250   814C ED 42        				sbc hl, bc
+251   814E 20 03        				jr nz, parachute_saved_not1000
+252   8150 22 7B 84     					ld (score),hl
+253   8153              parachute_saved_not1000:
+254   8153
+255   8153              				; The following routine divides hl by c and places the quotient in hl and the remainder in a
+256   8153
+257   8153
+258   8153 2A 7B 84     				ld hl,(score)
+259   8156 7D           				ld a, l
+260   8157              				;sub a, 4
+261   8157              				;add a,18
+262   8157 C6 0E        				add a, 14
+263   8159 6F           				ld l, a
+264   815A
+265   815A 0E 12        				ld c, 18
+266   815C CD 91 90     				call div_hl_c
+267   815F
+268   815F 23           				inc hl
+269   8160 7D           				ld a, l
+270   8161 FE 06        				cp 6
+271   8163 38 02        				jr c, parachute_saved_max6_cont
+272   8165 3E 06        					ld a, 6
+273   8167              parachute_saved_max6_cont:
+274   8167 32 8C 84     				ld (max_parachutes), a
+275   816A
+276   816A CD 07 8F     				call update_clock
+277   816D CD 94 84     				call update_screen
+278   8170
+279   8170 21 8D 84     				ld hl, num_parachutes
+280   8173 35           				dec (hl)
+281   8174
+282   8174 C9           				ret
+283   8175
+284   8175              check_parachute_saved:
+285   8175
+286   8175 3A 14 86     				ld a,( i_boat_left )
+287   8178 B7           				or a
+288   8179 28 0E        				jr z, check_parachute_saved_middle
+289   817B 3A 1D 86     					ld a,( i_parachute_1_7 )
+290   817E B7           					or a
+291   817F C8           					ret z
+292   8180 CD E8 8F     					call parachute_rescued_sound
+293   8183 AF           					xor a
+294   8184 32 1D 86     					ld (i_parachute_1_7), a
+295   8187 18 B9        					jr parachute_saved
+296   8189
+297   8189              check_parachute_saved_middle:
+298   8189 3A 15 86     				ld a,( i_boat_middle)
+299   818C B7           				or a
+300   818D 28 0E        				jr z, check_parachute_saved_right
+301   818F 3A 23 86     					ld a, (i_parachute_2_6)
+302   8192 B7           					or a
+303   8193 C8           					ret z
+304   8194 CD E8 8F     					call parachute_rescued_sound
+305   8197 AF           					xor a
+306   8198 32 23 86     					ld (i_parachute_2_6), a
+307   819B 18 A5        					jr parachute_saved
+308   819D
+309   819D              check_parachute_saved_right:
+310   819D 3A 28 86     					ld a,( i_parachute_3_5 )
+311   81A0 B7           					or a
+312   81A1 C8           					ret z
+313   81A2 CD E8 8F     					call parachute_rescued_sound
+314   81A5 AF           					xor a
+315   81A6 32 28 86     					ld (i_parachute_3_5), a
+316   81A9 18 97        					jr parachute_saved
+317   81AB
+318   81AB
+319   81AB              move_parachutes:
+320   81AB 3A 8F 84     				ld a, (parachute_step_index)
+321   81AE 3C           				inc a
+322   81AF FE 03        				cp %11
+323   81B1 20 01        				jr nz, moveparachutes_cont
+324   81B3 AF           					xor a
+325   81B4              moveparachutes_cont:
+326   81B4 32 8F 84     				ld (parachute_step_index), a
+327   81B7 B7           				or a
+328   81B8 20 24        				jr nz, move_parachutes_row2
+329   81BA 21 17 86     					ld hl, i_parachute_1_1
+330   81BD 06 07        					ld b, 7
+331   81BF CD CA 85     					call checksum8
+332   81C2 C4 DE 8F     					call nz, move_parachute_sound
+333   81C5
+334   81C5 3A 1D 86     					ld a, (i_parachute_1_7)
+335   81C8 B7           					or a
+336   81C9 28 09        					jr z, move_parachutes_row1_cont
+337   81CB AF           						xor a
+338   81CC 32 1D 86     						ld (i_parachute_1_7), a
+339   81CF 0E 2E        						ld c, low i_manwater_3 - 1
+340   81D1 CD E3 82     						call man_lost
+341   81D4              move_parachutes_row1_cont:
+342   81D4 21 1D 86     					ld hl, i_parachute_1_7
+343   81D7 06 06        					ld b, 6
+344   81D9 CD 01 81     					call scroll_bytes
+345   81DC
+346   81DC 18 4E        					jr move_parachutes_end
+347   81DE
+348   81DE
+349   81DE
+350   81DE              move_parachutes_row2:
+351   81DE FE 01        				cp 1
+352   81E0 20 24        				jr nz, move_parachutes_row3
+353   81E2 21 1E 86     					ld hl, i_parachute_2_1
+354   81E5 06 06        					ld b, 6
+355   81E7 CD CA 85     					call checksum8
+356   81EA C4 DE 8F     					call nz, move_parachute_sound
+357   81ED
+358   81ED 3A 23 86     					ld a, (i_parachute_2_6)
+359   81F0 B7           					or a
+360   81F1 28 09        					jr z, move_parachutes_row2_cont
+361   81F3 AF           						xor a
+362   81F4 32 23 86     						ld (i_parachute_2_6), a
+363   81F7 0E 2C        						ld c, low i_manwater_2 - 1
+364   81F9 CD E3 82     						call man_lost
+365   81FC              move_parachutes_row2_cont:
+366   81FC 21 23 86     					ld hl, i_parachute_2_6
+367   81FF 06 05        					ld b, 5
+368   8201 CD 01 81     					call scroll_bytes
+369   8204 18 26        					jr move_parachutes_end
+370   8206
+371   8206
+372   8206
+373   8206              move_parachutes_row3:
+374   8206 FE 02        				cp 2
+375   8208 20 22        				jr nz, move_parachutes_end
+376   820A 21 24 86     					ld hl, i_parachute_3_1
+377   820D 06 05        					ld b, 5
+378   820F CD CA 85     					call checksum8
+379   8212 C4 DE 8F     					call nz, move_parachute_sound
+380   8215
+381   8215 3A 28 86     					ld a, (i_parachute_3_5)
+382   8218 B7           					or a
+383   8219 28 09        					jr z, move_parachutes_row3_cont
+384   821B AF           						xor a
+385   821C 32 28 86     						ld (i_parachute_3_5), a
+386   821F 0E 2A        						ld c, low i_manwater_1 - 1
+387   8221 CD E3 82     						call man_lost
+388   8224
+389   8224              move_parachutes_row3_cont:
+390   8224 21 28 86     					ld hl, i_parachute_3_5
+391   8227 06 04        					ld b, 4
+392   8229 CD 01 81     					call scroll_bytes
+393   822C
+394   822C              move_parachutes_end:
+395   822C
+396   822C C9           				ret
+397   822D
+398   822D              show_lives:
+399   822D 3A 7D 84     				ld a, (lives)
+400   8230 B7           				or a
+401   8231 C8           				ret z
+402   8232
+403   8232 3E 01        				ld a, 1
+404   8234 32 04 86     				ld (i_miss), a
+405   8237
+406   8237 3A 7D 84     				ld a,(lives)
+407   823A 47           				ld b,a
+408   823B
+409   823B              show_lives_loop:
+410   823B C5           				push bc
+411   823C 3E 08        					ld a, low i_live_3+1	; i_screen is align 256 so low byte of the pointer is also the index
+412   823E 90           					sub b
+413   823F CD 14 85     					call showImage
+414   8242 C1           				pop bc
+415   8243 10 F6        				djnz show_lives_loop
+416   8245
+417   8245
+418   8245 C9           				ret
+419   8246
+420   8246              start_live:
+421   8246 AF           				xor a
+422   8247 32 83 84     				ld (shark_walk_pos), a
+423   824A CD 2D 82     				call show_lives
+424   824D
+425   824D AF           				xor a
+426   824E 32 87 84     				ld (step_counter), a
+427   8251 32 86 84     				ld (step), a
+428   8254
+429   8254 C9           				ret
+430   8255
+431   8255              start_machine:
+432   8255 CD D0 84     				call hideAll
+433   8258
+434   8258 3E 01        				ld a, 1
+435   825A 32 08 86     				ld (i_monkey), a
+436   825D 32 01 86     				ld (i_heli), a
+437   8260 32 02 86     				ld (i_heli_blade_front), a
+438   8263 32 03 86     				ld (i_heli_blade_back), a
+439   8266 32 0F 86     				ld (i_digit_1), a
+440   8269 32 10 86     				ld (i_digit_2), a
+441   826C 32 11 86     				ld (i_digit_separator), a
+442   826F 32 12 86     				ld (i_digit_3), a
+443   8272 32 13 86     				ld (i_digit_4), a
+444   8275 32 15 86     				ld (i_boat_middle), a
+445   8278 32 7E 84     				ld (boatpos), a
+446   827B
+447   827B AF           				xor a
+448   827C 32 0D 86     				ld (i_am), a
+449   827F
+450   827F CD 87 82     				call show_buttons
+451   8282
+452   8282
+453   8282 C9           				ret
+454   8283
+455   8283
+456   8283 0E 40        hide_buttons:	ld c, PAPER_BLACK | BLACK | BRIGHT
+457   8285 18 02        				jr show_buttons_i
+458   8287 0E 46        show_buttons:	ld c, PAPER_BLACK | YELLOW | BRIGHT
+459   8289 3E 38        show_buttons_i:	ld a, low i_button_a
+460   828B CD 05 85     				call IImageAttributes
+461   828E 3E 39        				ld a, low i_button_b
+462   8290 CD 05 85     				call IImageAttributes
+463   8293 C9           				ret
+464   8294
+465   8294              start_game:
+466   8294 CD D0 84     				call hideAll
+467   8297 CD 83 82     				call hide_buttons
+468   829A
+469   829A 3E 01        				ld a, 1
+470   829C 32 08 86     				ld (i_monkey), a
+471   829F 32 01 86     				ld (i_heli), a
+472   82A2 32 02 86     				ld (i_heli_blade_front), a
+473   82A5 32 03 86     				ld (i_heli_blade_back), a
+474   82A8 32 0F 86     				ld (i_digit_1), a
+475   82AB 32 10 86     				ld (i_digit_2), a
+476   82AE 32 12 86     				ld (i_digit_3), a
+477   82B1 32 15 86     				ld (i_boat_middle), a
+478   82B4 32 8C 84     				ld (max_parachutes), a
+479   82B7
+480   82B7 32 76 84     				ld (playing), a
+481   82BA 32 7E 84     				ld (boatpos), a
+482   82BD
+483   82BD 21 00 00     				ld hl,0
+484   82C0 22 7B 84     				ld (score), hl
+485   82C3 22 72 84     				ld (frame_counter), hl
+486   82C6 22 74 84     				ld (frame_counter+2), hl
+487   82C9 22 6E 84     				ld (counter), hl
+488   82CC 22 70 84     				ld (counter+2), hl
+489   82CF
+490   82CF AF           				xor a
+491   82D0 32 7D 84     				ld (lives), a
+492   82D3 32 0D 86     				ld (i_am), a
+493   82D6 32 0E 86     				ld (i_pm), a
+494   82D9 32 11 86     				ld (i_digit_separator), a
+495   82DC 32 8D 84     				ld (num_parachutes), a
+496   82DF
+497   82DF CD 46 82     				call start_live
+498   82E2 C9           				ret
+499   82E3
+500   82E3
+501   82E3              man_lost:
+502   82E3 CD 4C 83     				call man_overboard
+503   82E6
+504   82E6 3A 7D 84     				ld a,(lives)
+505   82E9 3C           				inc a
+506   82EA 32 7D 84     				ld (lives), a
+507   82ED
+508   82ED FE 03        				cp 3
+509   82EF 20 08        				jr nz, man_lost_not_last
+510   82F1 AF           				xor a
+511   82F2 32 76 84     				ld (playing), a
+512   82F5 CD 2D 82     				call show_lives
+513   82F8 C9           				ret
+514   82F9
+515   82F9              man_lost_not_last:
+516   82F9 21 8D 84     				ld hl, num_parachutes
+517   82FC 35           				dec (hl)
+518   82FD
+519   82FD CD 46 82     				call start_live
+520   8300 C9           				ret
+521   8301
+522   8301              ;modifies a
+523   8301              hide_sharks:
+524   8301 AF           			xor a
+525   8302 32 2C 86     			ld (i_shark_1), a
+526   8305 32 2E 86     			ld (i_shark_2), a
+527   8308 32 30 86     			ld (i_shark_3), a
+528   830B 32 32 86     			ld (i_shark_4), a
+529   830E 32 34 86     			ld (i_shark_5), a
+530   8311 C9           			ret
+531   8312
+532   8312
+533   8312              ; delays 50s of seconds
+534   8312              ; bc=delay time
+535   8312              ; 50 = 1s, 3000 = 1m
+536   8312 2A 72 84     delay50s:		ld	hl, (frame_counter)
+537   8315 09           				add hl, bc
+538   8316 54           				ld d, h
+539   8317 5D           				ld e, l
+540   8318
+541   8318              delay50s_loop:
+542   8318              				;halt		; at least 1 frame = 1/50s
+543   8318 E5           				push hl
+544   8319 D5           				push de
+545   831A CD 2F 85     				call parachute_keys
+546   831D CD 94 84     				call update_screen
+547   8320 D1           				pop de
+548   8321 E1           				pop hl
+549   8322
+550   8322 2A 72 84     				ld	hl, (frame_counter)
+551   8325              				;and a
+552   8325 ED 52        				sbc hl, de
+553   8327 FA 18 83     				jp m, delay50s_loop
+554   832A
+555   832A C9           				ret
+556   832B
+557   832B
+558   832B              man_overboard_beep:
+559   832B 01 05 00     				ld bc, 5
+560   832E CD 12 83     				call delay50s
+561   8331
+562   8331 3A 8B 84     				ld a, (man_overboard_entry)
+563   8334 B7           				or a
+564   8335 28 11        				jr z, man_overboard_beep_regular
+565   8337 CD FE 8F     					call parachute_lost_sound
+566   833A CD FE 8F     					call parachute_lost_sound
+567   833D CD FE 8F     					call parachute_lost_sound
+568   8340 CD FE 8F     					call parachute_lost_sound
+569   8343
+570   8343 AF           					xor a
+571   8344 32 8B 84     					ld (man_overboard_entry), a
+572   8347 C9           					ret
+573   8348
+574   8348              man_overboard_beep_regular:
+575   8348 CD FE 8F     				call parachute_lost_sound
+576   834B
+577   834B C9           				ret
+578   834C
+579   834C              ; c = start position
+580   834C              man_overboard:
+581   834C CD 01 83     				call hide_sharks
+582   834F 79           				ld a, c
+583   8350 32 8A 84     				ld (man_overboard_position), a
+584   8353 3E 01        				ld a, 1
+585   8355 32 8B 84     				ld (man_overboard_entry), a
+586   8358
+587   8358              man_overboard_loop:
+588   8358              				; Mostrem  tauró
+589   8358 3A 8A 84     				ld a, (man_overboard_position)
+590   835B FE 2A        				cp low i_manwater_1 - 1
+591   835D C4 14 85     				call nz, showImage
+592   8360              				; Mostrem paracaigudista
+593   8360 3C           				inc a
+594   8361 CD 14 85     				call showImage
+595   8364
+596   8364 CD 94 84     				call update_screen
+597   8367 CD 2B 83     				call man_overboard_beep
+598   836A
+599   836A 3A 8A 84     				ld a, (man_overboard_position)			; extra delay last pos
+600   836D FE 33        				cp low i_shark_5 - 1
+601   836F 20 06        				jr nz, man_overboard_nofinal
+602   8371 01 2D 00     					ld bc, 15*3
+603   8374 CD 12 83     					call delay50s
+604   8377
+605   8377
+606   8377              man_overboard_nofinal:
+607   8377
+608   8377              				; Amaguem tauró
+609   8377 3A 8A 84     				ld a, (man_overboard_position)
+610   837A FE 2A        				cp low i_manwater_1 - 1
+611   837C C4 22 85     				call nz, hideImage
+612   837F              				; Amaguem paracaigudista
+613   837F 3C           				inc a
+614   8380 CD 22 85     				call hideImage
+615   8383 3C           				inc a
+616   8384 32 8A 84     				ld (man_overboard_position), a
+617   8387 FE 36        				cp low i_manwater_6 + 1
+618   8389 20 CD        				jr nz, man_overboard_loop
+619   838B
+620   838B CD FE 8F     					call parachute_lost_sound
+621   838E CD FE 8F     					call parachute_lost_sound
+622   8391 CD FE 8F     					call parachute_lost_sound
+623   8394 CD FE 8F     					call parachute_lost_sound
+624   8397
+625   8397
+626   8397 C9           				ret
+627   8398
+628   8398
+629   8398
+630   8398              ; called every second
+631   8398              start_shark_if_need:
+632   8398
+633   8398 3A 85 84     				ld a, (shark_walk_counter)
+634   839B 3C           				inc a
+635   839C 32 85 84     				ld (shark_walk_counter), a
+636   839F FE 07        				cp 7
+637   83A1
+638   83A1 C0           				ret nz
+639   83A2
+640   83A2 AF           				xor a
+641   83A3 32 85 84     				ld (shark_walk_counter), a
+642   83A6 3E 2C        				ld a, low i_shark_1				; low byte pointer is index images aligned to 256
+643   83A8 32 83 84     				ld (shark_walk_pos), a
+644   83AB CD 14 85     				call showImage
+645   83AE AF           				xor a
+646   83AF 32 84 84     				ld (shark_walk_delay), a
+647   83B2
+648   83B2 C9           				ret
+649   83B3
+650   83B3              shark_move:
+651   83B3 3A 83 84     				ld a,(shark_walk_pos)			; is shark moving
+652   83B6 B7           				or a
+653   83B7 C8           				ret z							; return if not
+654   83B8
+655   83B8 3A 84 84     				ld a, (shark_walk_delay)		; move once every 4 steps
+656   83BB 3C           				inc a
+657   83BC 32 84 84     				ld (shark_walk_delay), a
+658   83BF FE 04        				cp 4
+659   83C1 C0           				ret nz							; return if not
+660   83C2 AF           				xor a
+661   83C3 32 84 84     				ld (shark_walk_delay), a		; reset move delay counter
+662   83C6
+663   83C6 3A 83 84     				ld a,(shark_walk_pos)
+664   83C9 CD 22 85     				call hideImage
+665   83CC 3C           				inc a
+666   83CD 3C           				inc a
+667   83CE FE 36        				cp low i_shark_5+2				; low byte pointer is index images aligned to 256
+668   83D0 20 05        				jr nz, shark_move_next
+669   83D2 AF           					xor a
+670   83D3 32 83 84     					ld (shark_walk_pos), a
+671   83D6 C9           					ret
+672   83D7
+673   83D7              shark_move_next:
+674   83D7 32 83 84     					ld (shark_walk_pos), a
+675   83DA CD 14 85     					call showImage
+676   83DD
+677   83DD C9           			ret
+678   83DE
+679   83DE              heli_blades:
+680   83DE 3A 82 84     				ld a, (last_heli)
+681   83E1 3C           				inc a
+682   83E2 32 82 84     				ld (last_heli), a
+683   83E5
+684   83E5 47           				ld b, a
+685   83E6
+686   83E6 1F           				rra
+687   83E7 E6 01        				and 1
+688   83E9 32 03 86     				ld (i_heli_blade_back), a
+689   83EC
+690   83EC 78           				ld a, b
+691   83ED 3D           				dec  a
+692   83EE 1F           				rra
+693   83EF E6 01        				and 1
+694   83F1 32 02 86     				ld (i_heli_blade_front), a
+695   83F4
+696   83F4 C9           				ret
+697   83F5
+698   83F5
+699   83F5              moveright:
+700   83F5 3A 7E 84     			ld a, (boatpos)
+701   83F8 FE 02        			cp 2
+702   83FA C8           			ret z		; we are max right just return
+703   83FB 3C           			inc a
+704   83FC
+705   83FC 18 06        			jr boat_repos
+706   83FE
+707   83FE              moveleft:
+708   83FE
+709   83FE 3A 7E 84     			ld a, (boatpos)
+710   8401 B7           			or a
+711   8402 C8           			ret z		; we are max left just return
+712   8403 3D           			dec a
+713   8404
+714   8404              boat_repos:
+715   8404
+716   8404 32 7E 84     			ld (boatpos), a
+717   8407 47           			ld b, a
+718   8408 AF           				xor a
+719   8409 32 14 86     				ld (i_boat_left),a
+720   840C 32 16 86     				ld (i_boat_right),a
+721   840F 32 15 86     				ld (i_boat_middle),a
+722   8412 78           			ld a,b
+723   8413
+724   8413 21 14 86     			ld hl, i_boat_left
+725   8416 85           			add l
+726   8417 6F           			ld l, a
+727   8418 3E 01        			ld a, 1
+728   841A 77           			ld (hl), a
+729   841B
+730   841B C9           			ret
+731   841C
+732   841C
+733   841C              showallandhideforfun:
+734   841C
+735   841C CD D0 84     				call hideAll
+736   841F CD 94 84     				call update_screen
+737   8422 76           				halt
+738   8423 00           				nop
+739   8424
+740   8424
+741   8424 3E 01        				ld a, 1
+742   8426              slowshowAll_loop:
+743   8426 F5           				push af
+744   8427 CD 14 85     				call showImage
+745   842A CD 94 84     				call update_screen
+746   842D 76           				halt
+747   842E 00           				nop
+748   842F
+749   842F F1           				pop af
+750   8430 3C           				inc a
+751   8431 FE 3A        				cp number_of_images
+752   8433 20 F1        				jr nz, slowshowAll_loop
+753   8435
+754   8435 C9           				ret
+755   8436
+756   8436
+757   8436              update_time_int:
+758   8436
+759   8436 21 77 84     				ld hl, time_50s
+760   8439 3A 78 84     				ld a, (time_second)
+761   843C 47           				ld b, a
+762   843D CD 98 85     				call update_time
+763   8440
+764   8440 3A 78 84     				ld a, (time_second)
+765   8443 B8           				cp b
+766   8444 C8           				ret z
+767   8445 3E 01        				ld a, 1
+768   8447 32 89 84     				ld (second_update), a
+769   844A
+770   844A C9           				ret
+771   844B
+772   844B
+773   844B              rpsinterrupt:
+774   844B
+775   844B 21 72 84     				ld hl, frame_counter
+776   844E CD 8D 85     				call inc32counter
+777   8451 CD 36 84     				call update_time_int
+778   8454
+779   8454              step_counter_interrupt:
+780   8454 3A 88 84     				ld a, (step_speed)
+781   8457 47           				ld b, a
+782   8458 3A 87 84     				ld a, (step_counter)
+783   845B
+784   845B B8           				cp b
+785   845C 20 0B        				jr nz, step_counter_nostep
+786   845E 3E 01        					ld a, 1
+787   8460 32 86 84     					ld (step), a
+788   8463 AF           					xor a
+789   8464 32 87 84     					ld (step_counter), a
+790   8467 18 04        					jr step_counter_segueix
+791   8469              step_counter_nostep:
+792   8469 3C           				inc a
+793   846A 32 87 84     				ld (step_counter), a
+794   846D
+795   846D              step_counter_segueix:
+796   846D
+797   846D C9           				ret
+798   846E
+799   846E
+800   846E
+801   846E
+802   846E 00 00        counter:		defw	0		; global loop counter (useless?)
+803   8470 00 00        				defw	0
+804   8472
+805   8472 00 00        frame_counter:	defw	0		; global frame counter every 50s
+806   8474 00 00        				defw	0
+807   8476
+808   8476 00           playing			defb	0		; game running 0 = menu, 1 = playing
+809   8477
+810   8477 00           time_50s:		defb 	0		; time structure
+811   8478 00           time_second:	defb 	0
+812   8479 00           time_minute:	defb 	0
+813   847A 00           time_hour:		defb 	0
+814   847B
+815   847B 00 00        score:			defw	0
+816   847D 00           lives:			defb	0
+817   847E 00           boatpos:		defb	0
+818   847F 00           game:			defb 	0
+819   8480
+820   8480 00           left_debounce:	defb	0
+821   8481 00           right_debounce:	defb	0
+822   8482
+823   8482 00           last_heli:		defb	0
+824   8483
+825   8483 00           shark_walk_pos:		defb	0
+826   8484 00           shark_walk_delay:	defb	0
+827   8485 00           shark_walk_counter:	defb	0
+828   8486
+829   8486
+830   8486 00           step:			defb	0
+831   8487 00           step_counter:	defb	0
+832   8488 00           step_speed:		defb	0
+833   8489
+834   8489 00           second_update:	defb 0
+835   848A 00           man_overboard_position:	defb 0	; -1
+836   848B 00           man_overboard_entry:	defb 0
+837   848C
+838   848C 00           max_parachutes:	defb	0
+839   848D
+840   848D 00           num_parachutes:	defb	0
+841   848E 00           				defb	0
+842   848F
+843   848F
+844   848F 00           parachute_step_index:	defb	0
+845   8490
+846   8490 00 00        gamea_highcore:	defw 0
+847   8492 00 00        gameb_highcore:	defw 0
+848   8494
+849   8494              useloader:		equ 1
+850   8494
+851   8494
+852   8494              	include "parachute_lcd.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_lcd.asm
+  1+  8494
+  2+  8494              update_screen:
+  3+  8494
+  4+  8494 3E 00        				ld a, 0
+  5+  8496 11 00 86     				ld de, i_screen
+  6+  8499 21 3A 86     				ld hl, i_screen_last
+  7+  849C
+  8+  849C              update_screen_loop:
+  9+  849C 3C           				inc a						; there's no object 0
+ 10+  849D FE 3A        				cp number_of_images
+ 11+  849F C8           				ret z
+ 12+  84A0 13           				inc de
+ 13+  84A1 23           				inc hl
+ 14+  84A2
+ 15+  84A2 F5           				push af
+ 16+  84A3 4F           					ld c, a				; keep index
+ 17+  84A4 1A           					ld a,(de)
+ 18+  84A5 47           					ld b, a
+ 19+  84A6 7E           					ld a, (hl)
+ 20+  84A7 B8           					cp b
+ 21+  84A8 28 12        					jr z, update_screen_no_change
+ 22+  84AA
+ 23+  84AA E5           						push hl
+ 24+  84AB D5           						push de
+ 25+  84AC
+ 26+  84AC 70           						ld (hl), b
+ 27+  84AD B7           						or a
+ 28+  84AE 28 06        						jr z, update_screen_show
+ 29+  84B0 79           							ld a, c						; hide
+ 30+  84B1 CD DC 84     							call IhideImage
+ 31+  84B4 18 04        							jr update_screen_show_cont
+ 32+  84B6
+ 33+  84B6              update_screen_show:
+ 34+  84B6 79           							ld a,c						; show
+ 35+  84B7 CD F4 84     							call IshowImage
+ 36+  84BA
+ 37+  84BA              update_screen_show_cont:
+ 38+  84BA
+ 39+  84BA D1           						pop de
+ 40+  84BB E1           						pop hl
+ 41+  84BC
+ 42+  84BC              update_screen_no_change:
+ 43+  84BC F1           				pop af
+ 44+  84BD
+ 45+  84BD 18 DD        				jr update_screen_loop
+ 46+  84BF
+ 47+  84BF
+ 48+  84BF
+ 49+  84BF              ; a = image number
+ 50+  84BF              ; returns de = attribs pointer
+ 51+  84BF              ; modifica hl, a, de
+ 52+  84BF              getImageAttribsPointer:
+ 53+  84BF 21 74 86     				ld hl, img_attr_map
+ 54+  84C2 87           				add a
+ 55+  84C3 85           				add l
+ 56+  84C4 6F           				ld l, a
+ 57+  84C5 30 01        				jr nc, getImageAttribsPointer_cont
+ 58+  84C7 24           					inc h
+ 59+  84C8              getImageAttribsPointer_cont:
+ 60+  84C8 5E           				ld e, (hl)
+ 61+  84C9 23           				inc hl
+ 62+  84CA 56           				ld d, (hl)
+ 63+  84CB C9           				ret
+ 64+  84CC
+ 65+  84CC 3E 01        showAll:		ld a, 1
+ 66+  84CE 18 01        				jr i_screen_a_to_all
+ 67+  84D0
+ 68+  84D0              hideAll:
+ 69+  84D0 AF           				xor a
+ 70+  84D1
+ 71+  84D1              i_screen_a_to_all:
+ 72+  84D1 06 39        				ld b, (i_screen_end - i_screen) - 1
+ 73+  84D3
+ 74+  84D3              hideAll_loop:
+ 75+  84D3 21 00 86     				ld hl, i_screen
+ 76+  84D6 68           				ld l, b				; i_screen 256 aligned
+ 77+  84D7 77           				ld (hl), a
+ 78+  84D8 10 F9        				djnz hideAll_loop
+ 79+  84DA
+ 80+  84DA 77           				ld (hl),a
+ 81+  84DB C9           				ret
+ 82+  84DC
+ 83+  84DC
+ 84+  84DC              ; a = image number
+ 85+  84DC              ; modifica hl, de, b, a
+ 86+  84DC CD BF 84     IhideImage:		call getImageAttribsPointer
+ 87+  84DF EB           				ex de, hl
+ 88+  84E0              IhideImage_item:
+ 89+  84E0              hideImage_loop:
+ 90+  84E0 5E           				ld e, (hl)
+ 91+  84E1 23           				inc hl
+ 92+  84E2 56           				ld d, (hl)
+ 93+  84E3 23           				inc hl
+ 94+  84E4
+ 95+  84E4 7A           				ld a, d
+ 96+  84E5 B3           				or e
+ 97+  84E6 C8           				ret z
+ 98+  84E7
+ 99+  84E7 1A           				ld a, (de)
+100+  84E8 E6 F8        				and %11111000
+101+  84EA 47           				ld b, a
+102+  84EB E6 38        				and %00111000
+103+  84ED 0F           				rrca
+104+  84EE 0F           				rrca
+105+  84EF 0F           				rrca
+106+  84F0 B0           				or b
+107+  84F1 12           				ld (de), a
+108+  84F2
+109+  84F2 18 EC        				jr hideImage_loop
+110+  84F4
+111+  84F4
+112+  84F4              ; a = image number
+113+  84F4              ; modifica hl, de, a
+114+  84F4 CD BF 84     IshowImage:		call getImageAttribsPointer
+115+  84F7 EB           				ex de, hl
+116+  84F8              IshowImage_item:
+117+  84F8              showImage_loop:
+118+  84F8 5E           				ld e, (hl)
+119+  84F9 23           				inc hl
+120+  84FA 56           				ld d, (hl)
+121+  84FB 23           				inc hl
+122+  84FC
+123+  84FC 7A           				ld a, d
+124+  84FD B3           				or e
+125+  84FE C8           				ret z
+126+  84FF
+127+  84FF 1A           				ld a, (de)
+128+  8500 E6 F8        				and %11111000
+129+  8502 12           				ld (de), a
+130+  8503
+131+  8503 18 F3        				jr showImage_loop
+132+  8505
+133+  8505
+134+  8505              ; a = image number
+135+  8505              ; c = attributes
+136+  8505              ; modifica hl, de, a
+137+  8505              IImageAttributes:
+138+  8505 CD BF 84     				call getImageAttribsPointer
+139+  8508 EB           				ex de, hl
+140+  8509              IImageAttributes_item:
+141+  8509              IImageAttributes_loop:
+142+  8509 5E           				ld e, (hl)
+143+  850A 23           				inc hl
+144+  850B 56           				ld d, (hl)
+145+  850C 23           				inc hl
+146+  850D
+147+  850D 7A           				ld a, d
+148+  850E B3           				or e
+149+  850F C8           				ret z
+150+  8510
+151+  8510 79           				ld a, c
+152+  8511 12           				ld (de), a
+153+  8512
+154+  8512 18 F5        				jr IImageAttributes_loop
+155+  8514
+156+  8514              ; a = image number
+157+  8514              ; modifies --
+158+  8514              ; dynamically modified
+159+  8514              showImage:
+160+  8514
+161+  8514 32 1D 85     			ld (showImage_index+1), a
+162+  8517 32 20 85     			ld (showImage_restore_a+1), a
+163+  851A
+164+  851A 3E 01        			ld a, 1
+165+  851C              showImage_index:
+166+  851C 32 00 86     			ld (i_screen), a
+167+  851F
+168+  851F              showImage_restore_a:
+169+  851F 3E 00        			ld a, 0
+170+  8521
+171+  8521 C9           			ret
+172+  8522
+173+  8522              ; a = image number
+174+  8522              ; modifies --
+175+  8522              ; dynamically modified
+176+  8522              hideImage:
+177+  8522
+178+  8522 32 2A 85     			ld (hideImage_index+1), a
+179+  8525 32 2D 85     			ld (hideImage_restore_a+1), a
+180+  8528
+181+  8528 AF           			xor a
+182+  8529              hideImage_index:
+183+  8529 32 00 86     			ld (i_screen), a
+184+  852C
+185+  852C              hideImage_restore_a:
+186+  852C 3E 00        			ld a, 0
+187+  852E
+188+  852E C9           			ret
+189+  852F
+# file closed: /home/carles/Projectes/zx/parachute/parachute_lcd.asm
+853   852F              	include "parachute_keys.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_keys.asm
+  1+  852F
+  2+  852F              parachute_keys:
+  3+  852F
+  4+  852F 06 F7        				ld b, KEYSEG_12345
+  5+  8531 16 1F        				ld d, %00011111
+  6+  8533 CD 76 85     				call  checkkey
+  7+  8536 28 0D        				jr 	  z, nomoveleft
+  8+  8538
+  9+  8538 3A 80 84     					ld a, (left_debounce)
+ 10+  853B B7           					or a
+ 11+  853C 20 08        					jr nz, moveleft_cont	; debouncer forces to release the key
+ 12+  853E
+ 13+  853E CD FE 83     						call moveleft
+ 14+  8541 3E 01        						ld a, 1
+ 15+  8543
+ 16+  8543 18 01        						jr moveleft_cont
+ 17+  8545
+ 18+  8545              nomoveleft:
+ 19+  8545 AF           					xor a
+ 20+  8546
+ 21+  8546              moveleft_cont:
+ 22+  8546 32 80 84     					ld (left_debounce),a
+ 23+  8549
+ 24+  8549
+ 25+  8549 06 EF        				ld b, KEYSEG_09876
+ 26+  854B 16 1F        				ld d, %00011111
+ 27+  854D CD 76 85     				call  checkkey
+ 28+  8550 28 0D        				jr 	  z, nomoveright
+ 29+  8552
+ 30+  8552 3A 81 84     					ld a, (right_debounce)
+ 31+  8555 B7           					or a
+ 32+  8556 20 08        					jr nz, moveright_cont	; debouncer forces to release the key
+ 33+  8558
+ 34+  8558 CD F5 83     						call moveright
+ 35+  855B 3E 01        						ld a, 1
+ 36+  855D
+ 37+  855D 18 01        						jr moveright_cont
+ 38+  855F
+ 39+  855F              nomoveright:
+ 40+  855F AF           					xor a
+ 41+  8560
+ 42+  8560              moveright_cont:
+ 43+  8560 32 81 84     					ld (right_debounce),a
+ 44+  8563
+ 45+  8563
+ 46+  8563 C9           				ret
+ 47+  8564
+ 48+  8564              waitnokey:
+ 49+  8564 AF           				xor a
+ 50+  8565 DB FE        				in a,(0xfe)
+ 51+  8567 2F           				cpl
+ 52+  8568 E6 3F        				and %00111111
+ 53+  856A 20 F8        				jr	nz, waitnokey
+ 54+  856C C9           				ret
+ 55+  856D
+ 56+  856D              waitkey:
+ 57+  856D AF           				xor a
+ 58+  856E DB FE        				in a,(0xfe)
+ 59+  8570 2F           				cpl
+ 60+  8571 E6 3F        				and %00111111
+ 61+  8573 28 F8        				jr	z, waitkey
+ 62+  8575 C9           				ret
+ 63+  8576
+ 64+  8576              ; b= segment
+ 65+  8576              ; d= mask
+ 66+  8576              checkkey:
+ 67+  8576 AF           				xor a
+ 68+  8577 0E FE        				ld c, 0xfe
+ 69+  8579 ED 78        				in a,(c)
+ 70+  857B 2F           				cpl
+ 71+  857C A2           				and d
+ 72+  857D C9           				ret
+ 73+  857E
+# file closed: /home/carles/Projectes/zx/parachute/parachute_keys.asm
+854   857E              	include "parachute_misc.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_misc.asm
+  1+  857E
+  2+  857E
+  3+  857E
+  4+  857E              ; compare hl and de
+  5+  857E              ; modifies a
+  6+  857E              ; z flag
+  7+  857E              cp_hl_bc_16b:
+  8+  857E 7D           				ld a,l
+  9+  857F B9           				cp c
+ 10+  8580 C0           				ret nz
+ 11+  8581 7C           				ld a,h
+ 12+  8582 B8           				cp b
+ 13+  8583 C9           				ret
+ 14+  8584
+ 15+  8584
+ 16+  8584              ; increment content hl 2 bcd bytes (4 bcd digits)
+ 17+  8584              ; modifies hl, a
+ 18+  8584              incbcdcounter_16b:
+ 19+  8584 B7           				or a		; just to reset carry
+ 20+  8585 7E           				ld a,(hl)
+ 21+  8586 3C           				inc a
+ 22+  8587 27           				daa
+ 23+  8588 77           				ld (hl), a
+ 24+  8589 C0           				ret nz
+ 25+  858A
+ 26+  858A 23           				inc hl
+ 27+  858B 18 F7        				jr incbcdcounter_16b
+ 28+  858D
+ 29+  858D
+ 30+  858D              ; increments 32bits counter pointed by hl
+ 31+  858D              ; must be in 2 low byte align
+ 32+  858D              ; modifies hl
+ 33+  858D              inc32counter:
+ 34+  858D
+ 35+  858D 34           				inc (hl)
+ 36+  858E C0           				ret nz
+ 37+  858F 23           				inc hl
+ 38+  8590 34           				inc (hl)
+ 39+  8591 C0           				ret nz
+ 40+  8592 23           				inc hl
+ 41+  8593 34           				inc (hl)
+ 42+  8594 C0           				ret nz
+ 43+  8595 23           				inc hl
+ 44+  8596 34           				inc (hl)
+ 45+  8597
+ 46+  8597 C9           				ret
+ 47+  8598
+ 48+  8598
+ 49+  8598              ; updates time structure pointed by hl
+ 50+  8598              ; format 4 bytes
+ 51+  8598              ; 50s, seconds, minutes, hours
+ 52+  8598              ; modifies hl, a
+ 53+  8598 7E           update_time:	ld a, (hl)
+ 54+  8599 3C           				inc a
+ 55+  859A FE 32        				cp 50
+ 56+  859C 20 1C        				jr nz, update_time_end
+ 57+  859E
+ 58+  859E              update_time_nextsecond:
+ 59+  859E AF           				xor a
+ 60+  859F 77           				ld (hl), a
+ 61+  85A0 23           				inc hl
+ 62+  85A1
+ 63+  85A1 7E           				ld a, (hl)
+ 64+  85A2 3C           				inc a
+ 65+  85A3 FE 3C        				cp 60
+ 66+  85A5 20 13        				jr nz, update_time_end
+ 67+  85A7
+ 68+  85A7              update_time_nextminute:
+ 69+  85A7 AF           				xor a
+ 70+  85A8 77           				ld (hl), a
+ 71+  85A9 23           				inc hl
+ 72+  85AA
+ 73+  85AA 7E           				ld a, (hl)
+ 74+  85AB 3C           				inc a
+ 75+  85AC FE 3C        				cp 60
+ 76+  85AE 20 0A        				jr nz, update_time_end
+ 77+  85B0
+ 78+  85B0              update_time_nexthour:
+ 79+  85B0 AF           				xor a
+ 80+  85B1 77           				ld (hl), a
+ 81+  85B2 23           				inc hl
+ 82+  85B3
+ 83+  85B3 7E           				ld a, (hl)
+ 84+  85B4 3C           				inc a
+ 85+  85B5 FE 18        				cp 24
+ 86+  85B7 20 01        				jr nz, update_time_end
+ 87+  85B9 AF           				xor a
+ 88+  85BA
+ 89+  85BA
+ 90+  85BA              update_time_end:
+ 91+  85BA 77           				ld (hl),a
+ 92+  85BB C9           				ret
+ 93+  85BC
+ 94+  85BC
+ 95+  85BC              ; swap memory contents
+ 96+  85BC              ; hl = 1st pointer, de = 2nd pointer, bc = bytes to swap
+ 97+  85BC              ; modifies af, af', hl, de, bc
+ 98+  85BC              swap_memory:
+ 99+  85BC 7E           				ld a, (hl)
+100+  85BD 08           				ex af, af'
+101+  85BE 1A           				ld a, (de)
+102+  85BF 77           				ld (hl), a
+103+  85C0 08           				ex af, af'
+104+  85C1 12           				ld (de), a
+105+  85C2
+106+  85C2 23           				inc hl
+107+  85C3 13           				inc de
+108+  85C4
+109+  85C4 0D           				dec c
+110+  85C5 20 F5        				jr nz, swap_memory
+111+  85C7 10 F3        				djnz swap_memory
+112+  85C9
+113+  85C9 C9           				ret
+114+  85CA
+115+  85CA              ; hl = start
+116+  85CA              ; b = elements
+117+  85CA              ; modifies hl, b, a
+118+  85CA              ; returns a
+119+  85CA              checksum8:
+120+  85CA AF           				xor a
+121+  85CB              checksum8_loop:
+122+  85CB 86           				add (hl)
+123+  85CC 23           				inc hl
+124+  85CD 10 FC        				djnz checksum8_loop
+125+  85CF C9           				ret
+# file closed: /home/carles/Projectes/zx/parachute/parachute_misc.asm
+855   85D0              	include "parachute_screen.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_screen.asm
+  1+  85D0
+  2+  85D0 00 00 00...  						align 256
+  3+  8600              i_screen:
+  4+  8600
+  5+  8600 00           i_none:					defb 0
+  6+  8601
+  7+  8601 00           i_heli:					defb 0
+  8+  8602 00           i_heli_blade_front:		defb 0
+  9+  8603 00           i_heli_blade_back:		defb 0
+ 10+  8604
+ 11+  8604 00           i_miss:					defb 0
+ 12+  8605 00           i_live_1:				defb 0
+ 13+  8606 00           i_live_2:				defb 0
+ 14+  8607 00           i_live_3:				defb 0
+ 15+  8608
+ 16+  8608 00           i_monkey:				defb 0
+ 17+  8609 00           i_bell_high:			defb 0
+ 18+  860A 00           i_bell_low:				defb 0
+ 19+  860B
+ 20+  860B 00           i_gamea:				defb 0
+ 21+  860C 00           i_gameb:				defb 0
+ 22+  860D
+ 23+  860D 00           i_am:					defb 0
+ 24+  860E 00           i_pm:					defb 0
+ 25+  860F 00           i_digit_1:				defb 0
+ 26+  8610 00           i_digit_2:				defb 0
+ 27+  8611 00           i_digit_separator:		defb 0
+ 28+  8612 00           i_digit_3:				defb 0
+ 29+  8613 00           i_digit_4:				defb 0
+ 30+  8614
+ 31+  8614 00           i_boat_left:			defb 0
+ 32+  8615 00           i_boat_middle:			defb 0
+ 33+  8616 00           i_boat_right:			defb 0
+ 34+  8617
+ 35+  8617 00           i_parachute_1_1:		defb 0
+ 36+  8618 00           i_parachute_1_2:		defb 0
+ 37+  8619 00           i_parachute_1_3:		defb 0
+ 38+  861A 00           i_parachute_1_4:		defb 0
+ 39+  861B 00           i_parachute_1_5:		defb 0
+ 40+  861C 00           i_parachute_1_6:		defb 0
+ 41+  861D 00           i_parachute_1_7:		defb 0
+ 42+  861E
+ 43+  861E 00           i_parachute_2_1:		defb 0
+ 44+  861F 00           i_parachute_2_2:		defb 0
+ 45+  8620 00           i_parachute_2_3:		defb 0
+ 46+  8621 00           i_parachute_2_4:		defb 0
+ 47+  8622 00           i_parachute_2_5:		defb 0
+ 48+  8623 00           i_parachute_2_6:		defb 0
+ 49+  8624
+ 50+  8624 00           i_parachute_3_1:		defb 0
+ 51+  8625 00           i_parachute_3_2:		defb 0
+ 52+  8626 00           i_parachute_3_3:		defb 0
+ 53+  8627 00           i_parachute_3_4:		defb 0
+ 54+  8628 00           i_parachute_3_5:		defb 0
+ 55+  8629
+ 56+  8629 00           i_parachute_3_hang1:	defb 0
+ 57+  862A 00           i_parachute_3_hang2:	defb 0
+ 58+  862B
+ 59+  862B 00           i_manwater_1:			defb 0
+ 60+  862C 00           i_shark_1:				defb 0
+ 61+  862D 00           i_manwater_2:			defb 0
+ 62+  862E 00           i_shark_2:				defb 0
+ 63+  862F 00           i_manwater_3:			defb 0
+ 64+  8630 00           i_shark_3:				defb 0
+ 65+  8631 00           i_manwater_4:			defb 0
+ 66+  8632 00           i_shark_4:				defb 0
+ 67+  8633 00           i_manwater_5:			defb 0
+ 68+  8634 00           i_shark_5:				defb 0
+ 69+  8635 00           i_manwater_6:			defb 0
+ 70+  8636
+ 71+  8636 00           i_button_left:			defb 0
+ 72+  8637 00           i_button_right:			defb 0
+ 73+  8638
+ 74+  8638 00           i_button_a:				defb 0
+ 75+  8639 00           i_button_b:				defb 0
+ 76+  863A
+ 77+  863A              i_screen_end:
+ 78+  863A
+ 79+  863A              number_of_images:		equ 	(i_screen_end - i_screen)
+ 80+  863A
+ 81+  863A 01 01 01...  i_screen_last:			defs number_of_images, 1
+ 82+  8674
+ 83+  8674              img_attr_map:
+ 84+  8674 00 00        	defw 0x0000					;0
+ 85+  8676
+ 86+  8676 EA 86        	defw img_heli				;1
+ 87+  8678 1C 87        	defw img_heli_blade_front	;2
+ 88+  867A 24 87        	defw img_heli_blade_back	;3
+ 89+  867C
+ 90+  867C 30 87        	defw img_miss				;4
+ 91+  867E 3C 87        	defw img_live_1				;5
+ 92+  8680 48 87        	defw img_live_2				;6
+ 93+  8682 54 87        	defw img_live_3				;7
+ 94+  8684
+ 95+  8684 60 87        	defw img_monkey				;8
+ 96+  8686 88 87        	defw img_bell_high			;9
+ 97+  8688 94 87        	defw img_bell_low			;10
+ 98+  868A
+ 99+  868A A2 87        	defw img_gamea				;11
+100+  868C AE 87        	defw img_gameb				;12
+101+  868E
+102+  868E BA 87        	defw img_am					;13
+103+  8690 C0 87        	defw img_pm					;14
+104+  8692 C6 87        	defw img_digit_1			;15
+105+  8694 D4 87        	defw img_digit_2			;16
+106+  8696 E2 87        	defw img_digit_separator	;17
+107+  8698 E8 87        	defw img_digit_3			;18
+108+  869A F6 87        	defw img_digit_4			;19
+109+  869C
+110+  869C 04 88        	defw img_boat_left			;20
+111+  869E 1C 88        	defw img_boat_middle		;21
+112+  86A0 3A 88        	defw img_boat_right			;22
+113+  86A2
+114+  86A2 56 88        	defw img_parachute_1_1		;23
+115+  86A4 60 88        	defw img_parachute_1_2		;24
+116+  86A6 6C 88        	defw img_parachute_1_3		;25
+117+  86A8 80 88        	defw img_parachute_1_4		;26
+118+  86AA 92 88        	defw img_parachute_1_5		;27
+119+  86AC A8 88        	defw img_parachute_1_6		;28
+120+  86AE C2 88        	defw img_parachute_1_7		;29
+121+  86B0
+122+  86B0 E2 88        	defw img_parachute_2_1		;30
+123+  86B2 EC 88        	defw img_parachute_2_2		;31
+124+  86B4 FE 88        	defw img_parachute_2_3		;32
+125+  86B6 12 89        	defw img_parachute_2_4		;33
+126+  86B8 2A 89        	defw img_parachute_2_5		;34
+127+  86BA 4A 89        	defw img_parachute_2_6		;35
+128+  86BC
+129+  86BC 6A 89        	defw img_parachute_3_1		;36
+130+  86BE 76 89        	defw img_parachute_3_2		;37
+131+  86C0 82 89        	defw img_parachute_3_3		;38
+132+  86C2 96 89        	defw img_parachute_3_4		;39
+133+  86C4 B2 89        	defw img_parachute_3_5		;40
+134+  86C6
+135+  86C6 D4 89        	defw img_parachute_3_hang1	;41
+136+  86C8 E8 89        	defw img_parachute_3_hang2	;42
+137+  86CA
+138+  86CA FC 89        	defw img_manwater_1			;43
+139+  86CC 0C 8A        	defw img_shark_1			;44
+140+  86CE 12 8A        	defw img_manwater_2			;45
+141+  86D0 24 8A        	defw img_shark_2			;46
+142+  86D2 2A 8A        	defw img_manwater_3			;47
+143+  86D4 3A 8A        	defw img_shark_3			;48
+144+  86D6 44 8A        	defw img_manwater_4			;49
+145+  86D8 52 8A        	defw img_shark_4			;50
+146+  86DA 5C 8A        	defw img_manwater_5			;51
+147+  86DC 68 8A        	defw img_shark_5			;52
+148+  86DE 82 8A        	defw img_manwater_6			;53
+149+  86E0
+150+  86E0 96 8A        	defw img_button_left		;54
+151+  86E2 A0 8A        	defw img_button_right		;55
+152+  86E4 AA 8A        	defw img_button_a			;56
+153+  86E6 B8 8A        	defw img_button_b			;57
+154+  86E8
+155+  86E8              img_attr_map_end:
+156+  86E8 00 00        	defw 0x0000					; 58
+157+  86EA
+158+  86EA
+159+  86EA              img_heli:
+160+  86EA 79 58 7A 58  			defw 22649, 22650, 22651, 22652, 22653, 22654, 22681, 22682, 22683, 22684, 22685, 22686, 22687, 22713, 22714, 22715, 22716, 22717, 22718, 22719, 22747, 22748, 22749, 22750, 0
+160+  86EE 7B 58 7C 58
+160+  86F2 7D 58 7E 58
+160+  86F6 99 58 9A 58
+160+  86FA 9B 58 9C 58
+160+  86FE 9D 58 9E 58
+160+  8702 9F 58 B9 58
+160+  8706 BA 58 BB 58
+160+  870A BC 58 BD 58
+160+  870E BE 58 BF 58
+160+  8712 DB 58 DC 58
+160+  8716 DD 58 DE 58
+160+  871A 00 00
+161+  871C              img_heli_blade_front:
+162+  871C 5D 58 5E 58  			defw 22621, 22622, 22623, 0
+162+  8720 5F 58 00 00
+163+  8724              img_heli_blade_back:
+164+  8724 58 58 59 58  			defw 22616, 22617, 22618, 22619, 22620, 0
+164+  8728 5A 58 5B 58
+164+  872C 5C 58 00 00
+165+  8730
+166+  8730              img_miss:
+167+  8730 18 5A 19 5A  			defw 23064, 23065, 23066, 23067, 23068, 0
+167+  8734 1A 5A 1B 5A
+167+  8738 1C 5A 00 00
+168+  873C              img_live_1:
+169+  873C 37 5A 38 5A  			defw 23095, 23096, 23127, 23128, 23129, 0
+169+  8740 57 5A 58 5A
+169+  8744 59 5A 00 00
+170+  8748              img_live_2:
+171+  8748 3A 5A 3B 5A  			defw 23098, 23099, 23130, 23131, 23132, 0
+171+  874C 5A 5A 5B 5A
+171+  8750 5C 5A 00 00
+172+  8754              img_live_3:
+173+  8754 3D 5A 3E 5A  			defw 23101, 23102, 23133, 23134, 23135, 0
+173+  8758 5D 5A 5E 5A
+173+  875C 5F 5A 00 00
+174+  8760
+175+  8760              img_monkey:
+176+  8760 E3 58 E4 58  			defw 22755, 22756, 22786, 22787, 22788, 22789, 22818, 22819, 22820, 22821, 22849, 22850, 22851, 22881, 22882, 22883, 22884, 22914, 22915, 0
+176+  8764 02 59 03 59
+176+  8768 04 59 05 59
+176+  876C 22 59 23 59
+176+  8770 24 59 25 59
+176+  8774 41 59 42 59
+176+  8778 43 59 61 59
+176+  877C 62 59 63 59
+176+  8780 64 59 82 59
+176+  8784 83 59 00 00
+177+  8788              img_bell_high:
+178+  8788 06 59 07 59  			defw 22790, 22791, 22792, 22822, 22823, 0
+178+  878C 08 59 26 59
+178+  8790 27 59 00 00
+179+  8794              img_bell_low:
+180+  8794 44 59 45 59  			defw 22852, 22853, 22885, 22886, 22917, 22918, 0
+180+  8798 65 59 66 59
+180+  879C 85 59 86 59
+180+  87A0 00 00
+181+  87A2
+182+  87A2              img_gamea:
+183+  87A2 A0 5A A1 5A  			defw 23200, 23201, 23202, 23203, 23204, 0
+183+  87A6 A2 5A A3 5A
+183+  87AA A4 5A 00 00
+184+  87AE              img_gameb:
+185+  87AE BB 5A BC 5A  			defw 23227, 23228, 23229, 23230, 23231, 0
+185+  87B2 BD 5A BE 5A
+185+  87B6 BF 5A 00 00
+186+  87BA
+187+  87BA              img_am:
+188+  87BA 61 58 62 58  			defw 22625, 22626, 0
+188+  87BE 00 00
+189+  87C0              img_pm:
+190+  87C0 81 58 82 58  			defw 22657, 22658, 0
+190+  87C4 00 00
+191+  87C6              img_digit_1:
+192+  87C6 6A 58 6B 58  			defw 22634, 22635, 22666, 22667, 22698, 22699, 0
+192+  87CA 8A 58 8B 58
+192+  87CE AA 58 AB 58
+192+  87D2 00 00
+193+  87D4              img_digit_2:
+194+  87D4 68 58 69 58  			defw 22632, 22633, 22664, 22665, 22696, 22697, 0
+194+  87D8 88 58 89 58
+194+  87DC A8 58 A9 58
+194+  87E0 00 00
+195+  87E2              img_digit_separator:
+196+  87E2 67 58 87 58  			defw 22631, 22663, 0
+196+  87E6 00 00
+197+  87E8              img_digit_3:
+198+  87E8 65 58 66 58  			defw 22629, 22630, 22661, 22662, 22693, 22694, 0
+198+  87EC 85 58 86 58
+198+  87F0 A5 58 A6 58
+198+  87F4 00 00
+199+  87F6              img_digit_4:
+200+  87F6 63 58 64 58  			defw 22627, 22628, 22659, 22660, 22691, 22692, 0
+200+  87FA 83 58 84 58
+200+  87FE A3 58 A4 58
+200+  8802 00 00
+201+  8804
+202+  8804              img_boat_left:
+203+  8804 E3 59 E4 59  			defw 23011, 23012, 23043, 23044, 23045, 23075, 23076, 23077, 23078, 23079, 23080, 0
+203+  8808 03 5A 04 5A
+203+  880C 05 5A 23 5A
+203+  8810 24 5A 25 5A
+203+  8814 26 5A 27 5A
+203+  8818 28 5A 00 00
+204+  881C              img_boat_middle:
+205+  881C E9 59 EA 59  			defw 23017, 23018, 23019, 23049, 23050, 23051, 23081, 23082, 23083, 23084, 23085, 23086, 23114, 23115, 0
+205+  8820 EB 59 09 5A
+205+  8824 0A 5A 0B 5A
+205+  8828 29 5A 2A 5A
+205+  882C 2B 5A 2C 5A
+205+  8830 2D 5A 2E 5A
+205+  8834 4A 5A 4B 5A
+205+  8838 00 00
+206+  883A              img_boat_right:
+207+  883A F0 59 F1 59  			defw 23024, 23025, 23026, 23056, 23057, 23058, 23088, 23089, 23090, 23091, 23092, 23093, 23094, 0
+207+  883E F2 59 10 5A
+207+  8842 11 5A 12 5A
+207+  8846 30 5A 31 5A
+207+  884A 32 5A 33 5A
+207+  884E 34 5A 35 5A
+207+  8852 36 5A 00 00
+208+  8856
+209+  8856              img_parachute_1_1:
+210+  8856 56 58 57 58  			defw 22614, 22615, 22646, 22647, 0
+210+  885A 76 58 77 58
+210+  885E 00 00
+211+  8860              img_parachute_1_2:
+212+  8860 53 58 54 58  			defw 22611, 22612, 22613, 22643, 22644, 0
+212+  8864 55 58 73 58
+212+  8868 74 58 00 00
+213+  886C              img_parachute_1_3:
+214+  886C 51 58 52 58  			defw 22609, 22610, 22640, 22641, 22642, 22672, 22673, 22704, 22705, 0
+214+  8870 70 58 71 58
+214+  8874 72 58 90 58
+214+  8878 91 58 B0 58
+214+  887C B1 58 00 00
+215+  8880              img_parachute_1_4:
+216+  8880 4D 58 4E 58  			defw 22605, 22606, 22637, 22638, 22669, 22670, 22701, 22702, 0
+216+  8884 6D 58 6E 58
+216+  8888 8D 58 8E 58
+216+  888C AD 58 AE 58
+216+  8890 00 00
+217+  8892              img_parachute_1_5:
+218+  8892 CA 58 CB 58  			defw 22730, 22731, 22732, 22762, 22763, 22764, 22794, 22795, 22796, 22827, 0
+218+  8896 CC 58 EA 58
+218+  889A EB 58 EC 58
+218+  889E 0A 59 0B 59
+218+  88A2 0C 59 2B 59
+218+  88A6 00 00
+219+  88A8              img_parachute_1_6:
+220+  88A8 28 59 29 59  			defw 22824, 22825, 22826, 22855, 22856, 22857, 22858, 22888, 22889, 22890, 22921, 22922, 0
+220+  88AC 2A 59 47 59
+220+  88B0 48 59 49 59
+220+  88B4 4A 59 68 59
+220+  88B8 69 59 6A 59
+220+  88BC 89 59 8A 59
+220+  88C0 00 00
+221+  88C2              img_parachute_1_7:
+222+  88C2 A5 59 A6 59  			defw 22949, 22950, 22951, 22952, 22981, 22982, 22983, 22984, 23013, 23014, 23015, 23016, 23046, 23047, 23048, 0
+222+  88C6 A7 59 A8 59
+222+  88CA C5 59 C6 59
+222+  88CE C7 59 C8 59
+222+  88D2 E5 59 E6 59
+222+  88D6 E7 59 E8 59
+222+  88DA 06 5A 07 5A
+222+  88DE 08 5A 00 00
+223+  88E2
+224+  88E2              img_parachute_2_1:
+225+  88E2 97 58 98 58  			defw 22679, 22680, 22711, 22712, 0
+225+  88E6 B7 58 B8 58
+225+  88EA 00 00
+226+  88EC              img_parachute_2_2:
+227+  88EC 94 58 95 58  			defw 22676, 22677, 22678, 22708, 22709, 22710, 22740, 22741, 0
+227+  88F0 96 58 B4 58
+227+  88F4 B5 58 B6 58
+227+  88F8 D4 58 D5 58
+227+  88FC 00 00
+228+  88FE              img_parachute_2_3:
+229+  88FE B2 58 B3 58  			defw 22706, 22707, 22737, 22738, 22739, 22769, 22770, 22801, 22802, 0
+229+  8902 D1 58 D2 58
+229+  8906 D3 58 F1 58
+229+  890A F2 58 11 59
+229+  890E 12 59 00 00
+230+  8912              img_parachute_2_4:
+231+  8912 CE 58 CF 58  			defw 22734, 22735, 22736, 22766, 22767, 22768, 22798, 22799, 22800, 22832, 22833, 0
+231+  8916 D0 58 EE 58
+231+  891A EF 58 F0 58
+231+  891E 0E 59 0F 59
+231+  8922 10 59 30 59
+231+  8926 31 59 00 00
+232+  892A              img_parachute_2_5:
+233+  892A 2C 59 2D 59  			defw 22828, 22829, 22830, 22831, 22860, 22861, 22862, 22863, 22892, 22893, 22894, 22895, 22925, 22926, 22927, 0
+233+  892E 2E 59 2F 59
+233+  8932 4C 59 4D 59
+233+  8936 4E 59 4F 59
+233+  893A 6C 59 6D 59
+233+  893E 6E 59 6F 59
+233+  8942 8D 59 8E 59
+233+  8946 8F 59 00 00
+234+  894A              img_parachute_2_6:
+235+  894A AC 59 AD 59  			defw 22956, 22957, 22958, 22959, 22988, 22989, 22990, 22991, 23020, 23021, 23022, 23023, 23052, 23053, 23054, 0
+235+  894E AE 59 AF 59
+235+  8952 CC 59 CD 59
+235+  8956 CE 59 CF 59
+235+  895A EC 59 ED 59
+235+  895E EE 59 EF 59
+235+  8962 0C 5A 0D 5A
+235+  8966 0E 5A 00 00
+236+  896A
+237+  896A              img_parachute_3_1:
+238+  896A D9 58 DA 58  			defw 22745, 22746, 22777, 22778, 22809, 0
+238+  896E F9 58 FA 58
+238+  8972 19 59 00 00
+239+  8976              img_parachute_3_2:
+240+  8976 D8 58 F7 58  			defw 22744, 22775, 22776, 22807, 22808, 0
+240+  897A F8 58 17 59
+240+  897E 18 59 00 00
+241+  8982              img_parachute_3_3:
+242+  8982 F4 58 F5 58  			defw 22772, 22773, 22774, 22804, 22805, 22806, 22837, 22838, 22870, 0
+242+  8986 F6 58 14 59
+242+  898A 15 59 16 59
+242+  898E 35 59 36 59
+242+  8992 56 59 00 00
+243+  8996              img_parachute_3_4:
+244+  8996 32 59 33 59  			defw 22834, 22835, 22836, 22866, 22867, 22868, 22869, 22898, 22899, 22900, 22901, 22931, 22932, 0
+244+  899A 34 59 52 59
+244+  899E 53 59 54 59
+244+  89A2 55 59 72 59
+244+  89A6 73 59 74 59
+244+  89AA 75 59 93 59
+244+  89AE 94 59 00 00
+245+  89B2              img_parachute_3_5:
+246+  89B2 B3 59 B4 59  			defw 22963, 22964, 22965, 22966, 22995, 22996, 22997, 22998, 23027, 23028, 23029, 23030, 23059, 23060, 23061, 23062, 0
+246+  89B6 B5 59 B6 59
+246+  89BA D3 59 D4 59
+246+  89BE D5 59 D6 59
+246+  89C2 F3 59 F4 59
+246+  89C6 F5 59 F6 59
+246+  89CA 13 5A 14 5A
+246+  89CE 15 5A 16 5A
+246+  89D2 00 00
+247+  89D4              img_parachute_3_hang1:
+248+  89D4 57 59 58 59  			defw 22871, 22872, 22902, 22903, 22904, 22934, 22935, 22936, 22967, 0
+248+  89D8 76 59 77 59
+248+  89DC 78 59 96 59
+248+  89E0 97 59 98 59
+248+  89E4 B7 59 00 00
+249+  89E8              img_parachute_3_hang2:
+250+  89E8 59 59 5A 59  			defw 22873, 22874, 22905, 22906, 22907, 22938, 22939, 22970, 22971, 0
+250+  89EC 79 59 7A 59
+250+  89F0 7B 59 9A 59
+250+  89F4 9B 59 BA 59
+250+  89F8 BB 59 00 00
+251+  89FC
+252+  89FC              img_manwater_1:
+253+  89FC 52 5A 53 5A  			defw 23122, 23123, 23124, 23125, 23154, 23155, 23156, 0
+253+  8A00 54 5A 55 5A
+253+  8A04 72 5A 73 5A
+253+  8A08 74 5A 00 00
+254+  8A0C              img_shark_1:
+255+  8A0C 70 5A 71 5A  			defw 23152, 23153, 0
+255+  8A10 00 00
+256+  8A12              img_manwater_2:
+257+  8A12 4C 5A 4D 5A  			defw 23116, 23117, 23118, 23147, 23148, 23149, 23150, 23151, 0
+257+  8A16 4E 5A 6B 5A
+257+  8A1A 6C 5A 6D 5A
+257+  8A1E 6E 5A 6F 5A
+257+  8A22 00 00
+258+  8A24              img_shark_2:
+259+  8A24 69 5A 6A 5A  			defw 23145, 23146, 0
+259+  8A28 00 00
+260+  8A2A              img_manwater_3:
+261+  8A2A 46 5A 47 5A  			defw 23110, 23111, 23112, 23141, 23142, 23143, 23144, 0
+261+  8A2E 48 5A 65 5A
+261+  8A32 66 5A 67 5A
+261+  8A36 68 5A 00 00
+262+  8A3A              img_shark_3:
+263+  8A3A 86 5A 87 5A  			defw 23174, 23175, 23206, 23207, 0
+263+  8A3E A6 5A A7 5A
+263+  8A42 00 00
+264+  8A44              img_manwater_4:
+265+  8A44 89 5A 8A 5A  			defw 23177, 23178, 23179, 23209, 23210, 23211, 0
+265+  8A48 8B 5A A9 5A
+265+  8A4C AA 5A AB 5A
+265+  8A50 00 00
+266+  8A52              img_shark_4:
+267+  8A52 8C 5A 8D 5A  			defw 23180, 23181, 23212, 23213, 0
+267+  8A56 AC 5A AD 5A
+267+  8A5A 00 00
+268+  8A5C              img_manwater_5:
+269+  8A5C 8F 5A 90 5A  			defw 23183, 23184, 23185, 23215, 23216, 0
+269+  8A60 91 5A AF 5A
+269+  8A64 B0 5A 00 00
+270+  8A68              img_shark_5:
+271+  8A68 75 5A 76 5A  			defw 23157, 23158, 23186, 23187, 23188, 23189, 23190, 23218, 23219, 23220, 23221, 23222, 0
+271+  8A6C 92 5A 93 5A
+271+  8A70 94 5A 95 5A
+271+  8A74 96 5A B2 5A
+271+  8A78 B3 5A B4 5A
+271+  8A7C B5 5A B6 5A
+271+  8A80 00 00
+272+  8A82              img_manwater_6:
+273+  8A82 77 5A 78 5A  			defw 23159, 23160, 23161, 23191, 23192, 23193, 23223, 23224, 23225, 0
+273+  8A86 79 5A 97 5A
+273+  8A8A 98 5A 99 5A
+273+  8A8E B7 5A B8 5A
+273+  8A92 B9 5A 00 00
+274+  8A96
+275+  8A96 C2 5A C3 5A  img_button_left:	defw attributes_start + 32 * 22 + 2, attributes_start + 32 * 22 + 3
+276+  8A9A E2 5A E3 5A  				defw attributes_start + 32 * 23 + 2, attributes_start + 32 * 23 + 3, 0
+276+  8A9E 00 00
+277+  8AA0
+278+  8AA0 DC 5A DD 5A  img_button_right:	defw attributes_start + 32 * 22 + 28, attributes_start + 32 * 22 + 29
+279+  8AA4 FC 5A FD 5A  				defw attributes_start + 32 * 23 + 28, attributes_start + 32 * 23 + 29, 0
+279+  8AA8 00 00
+280+  8AAA
+281+  8AAA C5 5A C6 5A  img_button_a:		defw attributes_start + 32 * 22 + 5, attributes_start + 32 * 22 + 6, attributes_start + 32 * 22 + 7
+281+  8AAE C7 5A
+282+  8AB0 E5 5A E6 5A  				defw attributes_start + 32 * 23 + 5, attributes_start + 32 * 23 + 6, attributes_start + 32 * 23 + 7, 0
+282+  8AB4 E7 5A 00 00
+283+  8AB8
+284+  8AB8 D8 5A D9 5A  img_button_b:		defw attributes_start + 32 * 22 + 24, attributes_start + 32 * 22 + 25, attributes_start + 32 * 22 + 26
+284+  8ABC DA 5A
+285+  8ABE F8 5A F9 5A  				defw attributes_start + 32 * 23 + 24, attributes_start + 32 * 23 + 25, attributes_start + 32 * 23 + 26, 0
+285+  8AC2 FA 5A 00 00
+# file closed: /home/carles/Projectes/zx/parachute/parachute_screen.asm
+856   8AC6              	include "parachute_logo.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_logo.asm
+  1+  8AC6
+  2+  8AC6              logo:
+  3+  8AC6
+  4+  8AC6 40 40 40 40      defb 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40
+  4+  8ACA 40 40 40 40
+  4+  8ACE 40 40 40 40
+  4+  8AD2 40 40 40 40
+  4+  8AD6 40 40 40 40
+  4+  8ADA 40 40 40 40
+  4+  8ADE 40 40 40 40
+  4+  8AE2 40 40 40 40
+  5+  8AE6 40 40 40 40      defb 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x00, 0x00, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40
+  5+  8AEA 40 40 40 40
+  5+  8AEE 40 40 40 40
+  5+  8AF2 40 40 40 40
+  5+  8AF6 40 40 40 40
+  5+  8AFA 40 40 40 40
+  5+  8AFE 00 00 40 40
+  5+  8B02 40 40 40 40
+  6+  8B06 38 38 38 38      defb 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38
+  6+  8B0A 38 38 38 38
+  6+  8B0E 38 38 38 38
+  6+  8B12 38 3F 3F 38
+  6+  8B16 38 3F 3F 3F
+  6+  8B1A 3F 3F 3F 3F
+  6+  8B1E 38 38 38 38
+  6+  8B22 38 38 38 38
+  7+  8B26 38 38 38 38      defb 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38
+  7+  8B2A 38 38 38 3F
+  7+  8B2E 38 38 38 38
+  7+  8B32 38 3F 3F 38
+  7+  8B36 3F 3F 3F 3F
+  7+  8B3A 3F 38 3F 3F
+  7+  8B3E 38 38 38 38
+  7+  8B42 38 38 38 38
+  8+  8B46 38 3F 3F 38      defb 0x38, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38
+  8+  8B4A 38 38 38 3F
+  8+  8B4E 38 38 38 38
+  8+  8B52 38 3F 3F 38
+  8+  8B56 3F 3F 38 38
+  8+  8B5A 3F 3F 3F 3F
+  8+  8B5E 3F 38 38 38
+  8+  8B62 38 38 38 38
+  9+  8B66 3C 3C 38 38      defb 0x3c, 0x3c, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38
+  9+  8B6A 38 38 38 38
+  9+  8B6E 38 38 38 38
+  9+  8B72 38 3F 3F 38
+  9+  8B76 3F 3F 3F 3F
+  9+  8B7A 3F 3F 3F 3F
+  9+  8B7E 3F 38 38 38
+  9+  8B82 38 38 38 38
+ 10+  8B86 3C 3C 3C 3C      defb 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38
+ 10+  8B8A 3C 3C 3C 3C
+ 10+  8B8E 3C 38 3F 3F
+ 10+  8B92 3F 38 3F 3F
+ 10+  8B96 3F 3F 3F 3F
+ 10+  8B9A 3F 3F 38 38
+ 10+  8B9E 3F 3F 3F 38
+ 10+  8BA2 38 38 38 38
+ 11+  8BA6 3C 3C 3C 38      defb 0x3c, 0x3c, 0x3c, 0x38, 0x38, 0x3c, 0x3c, 0x3c, 0x3c, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38
+ 11+  8BAA 38 3C 3C 3C
+ 11+  8BAE 3C 38 3F 3F
+ 11+  8BB2 3F 38 3F 3F
+ 11+  8BB6 3F 3F 3F 38
+ 11+  8BBA 3F 3F 3F 3F
+ 11+  8BBE 3F 3F 3F 38
+ 11+  8BC2 38 38 38 38
+ 12+  8BC6 3C 22 38 78      defb 0x3c, 0x22, 0x38, 0x78, 0x78, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c
+ 12+  8BCA 78 38 3F 3F
+ 12+  8BCE 3F 38 3F 3F
+ 12+  8BD2 3F 38 3F 3F
+ 12+  8BD6 3F 3F 3F 38
+ 12+  8BDA 3F 3F 3F 3F
+ 12+  8BDE 3F 3F 3C 3C
+ 12+  8BE2 3C 3C 3C 3C
+ 13+  8BE6 3A 10 38 78      defb 0x3a, 0x10, 0x38, 0x78, 0x78, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x3c, 0x3c, 0x3c, 0x3c, 0x22, 0x3c, 0x3c
+ 13+  8BEA 78 38 3F 3F
+ 13+  8BEE 3F 3F 3F 3F
+ 13+  8BF2 3F 3F 3F 3F
+ 13+  8BF6 3F 3F 3F 3F
+ 13+  8BFA 3F 3F 3F 38
+ 13+  8BFE 38 3C 3C 3C
+ 13+  8C02 3C 22 3C 3C
+ 14+  8C06 3A 10 38 38      defb 0x3a, 0x10, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3c, 0x3a, 0x3a, 0x3c
+ 14+  8C0A 3F 3F 38 3F
+ 14+  8C0E 3F 3F 3F 38
+ 14+  8C12 3F 3F 3F 3F
+ 14+  8C16 38 38 3F 3F
+ 14+  8C1A 3F 3F 3F 3F
+ 14+  8C1E 3F 3F 3F 38
+ 14+  8C22 3C 3A 3A 3C
+ 15+  8C26 3A 38 38 38      defb 0x3a, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3c, 0x3a, 0x3a, 0x3a
+ 15+  8C2A 38 3F 3F 38
+ 15+  8C2E 3F 3F 3F 38
+ 15+  8C32 3F 3F 3F 3F
+ 15+  8C36 38 38 3F 3F
+ 15+  8C3A 3F 3F 3F 3F
+ 15+  8C3E 3F 3F 3F 3F
+ 15+  8C42 3C 3A 3A 3A
+ 16+  8C46 3A 3C 38 38      defb 0x3a, 0x3c, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x38, 0x3c, 0x3a, 0x3a
+ 16+  8C4A 38 3F 3F 38
+ 16+  8C4E 38 3F 3F 38
+ 16+  8C52 38 3F 3F 3F
+ 16+  8C56 38 38 38 3F
+ 16+  8C5A 3F 38 3F 3F
+ 16+  8C5E 3F 38 3F 3F
+ 16+  8C62 38 3C 3A 3A
+ 17+  8C66 3C 3C 3C 3C      defb 0x3c, 0x3c, 0x3c, 0x3c, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x3f, 0x3f, 0x3c, 0x3c, 0x3c, 0x3c
+ 17+  8C6A 38 3F 3F 3F
+ 17+  8C6E 3F 38 38 38
+ 17+  8C72 3F 3F 3F 3F
+ 17+  8C76 38 38 38 3F
+ 17+  8C7A 3F 3F 3F 3F
+ 17+  8C7E 38 38 3F 3F
+ 17+  8C82 3C 3C 3C 3C
+ 18+  8C86 3C 3C 3C 3C      defb 0x3c, 0x3c, 0x3c, 0x3c, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x3c, 0x3c, 0x3c, 0x3c, 0x3c
+ 18+  8C8A 38 3F 3F 3F
+ 18+  8C8E 3F 38 38 38
+ 18+  8C92 3F 3F 3F 3F
+ 18+  8C96 38 38 38 3F
+ 18+  8C9A 3F 3F 3F 38
+ 18+  8C9E 38 38 38 3C
+ 18+  8CA2 3C 3C 3C 3C
+ 19+  8CA6 3A 3A 3C 3F      defb 0x3a, 0x3a, 0x3c, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x3c, 0x3c, 0x3c, 0x3a, 0x3a
+ 19+  8CAA 3F 3F 3F 3F
+ 19+  8CAE 3F 38 38 38
+ 19+  8CB2 3F 3F 3F 3F
+ 19+  8CB6 3F 3F 3F 3F
+ 19+  8CBA 3F 3F 3F 38
+ 19+  8CBE 38 38 38 3C
+ 19+  8CC2 3C 3C 3A 3A
+ 20+  8CC6 3A 3A 3A 3F      defb 0x3a, 0x3a, 0x3a, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3a, 0x3a
+ 20+  8CCA 3F 3F 3F 3F
+ 20+  8CCE 3F 38 38 38
+ 20+  8CD2 3F 3F 3F 38
+ 20+  8CD6 3F 3F 3F 3F
+ 20+  8CDA 3F 3F 3F 38
+ 20+  8CDE 3F 3F 3F 3F
+ 20+  8CE2 3F 38 3A 3A
+ 21+  8CE6 3A 3A 38 3F      defb 0x3a, 0x3a, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x38, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x38, 0x3f, 0x3f, 0x3a
+ 21+  8CEA 3F 3F 3F 3F
+ 21+  8CEE 3F 38 38 38
+ 21+  8CF2 38 38 38 38
+ 21+  8CF6 3F 3F 3F 3F
+ 21+  8CFA 3F 3F 3F 3F
+ 21+  8CFE 3F 38 3F 3F
+ 21+  8D02 38 3F 3F 3A
+ 22+  8D06 6F 6F 6F 6F      defb 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6d, 0x6d, 0x6d, 0x6f, 0x68, 0x68, 0x6d, 0x6d, 0x6d, 0x6f, 0x6f, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d
+ 22+  8D0A 6F 6F 6D 6D
+ 22+  8D0E 6D 6F 68 68
+ 22+  8D12 6D 6D 6D 6F
+ 22+  8D16 6F 6F 6D 6D
+ 22+  8D1A 6D 6D 6F 6D
+ 22+  8D1E 6D 6D 6D 6D
+ 22+  8D22 6D 6D 6D 6D
+ 23+  8D26 6F 6F 6F 6F      defb 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6f
+ 23+  8D2A 6F 6D 6D 6D
+ 23+  8D2E 6D 6D 6D 6D
+ 23+  8D32 6D 6D 6D 6D
+ 23+  8D36 6D 6D 6D 6D
+ 23+  8D3A 6D 6D 6D 6D
+ 23+  8D3E 6D 6D 6F 6F
+ 23+  8D42 6F 6F 6F 6F
+ 24+  8D46 6F 6F 6F 6F      defb 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6f, 0x6f, 0x6f, 0x6f, 0x6f
+ 24+  8D4A 6F 6F 6D 6D
+ 24+  8D4E 6F 6D 6D 6D
+ 24+  8D52 6D 6D 6F 6D
+ 24+  8D56 6D 6D 6D 6D
+ 24+  8D5A 6D 6D 6D 6D
+ 24+  8D5E 6D 6D 6F 6F
+ 24+  8D62 6F 6F 6F 6F
+ 25+  8D66 6D 6D 6D 6D      defb 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d, 0x6f, 0x6d, 0x6d, 0x6d, 0x6d, 0x6d
+ 25+  8D6A 6D 6F 6D 6D
+ 25+  8D6E 6F 6D 6D 6D
+ 25+  8D72 6D 6D 6F 6D
+ 25+  8D76 6D 6F 6D 6D
+ 25+  8D7A 6D 6D 6D 6D
+ 25+  8D7E 6D 6D 6F 6D
+ 25+  8D82 6D 6D 6D 6D
+ 26+  8D86              parachute_logo_attributes:
+ 27+  8D86 40 42 40 40      defb 0x40, 0x42, 0x40, 0x40, 0x40, 0x46, 0x46, 0x46, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46, 0x46, 0x46, 0x40, 0x40, 0x40, 0x42, 0x40
+ 27+  8D8A 40 46 46 46
+ 27+  8D8E 40 00 00 00
+ 27+  8D92 00 00 00 00
+ 27+  8D96 00 00 00 00
+ 27+  8D9A 00 00 00 00
+ 27+  8D9E 46 46 46 40
+ 27+  8DA2 40 40 42 40
+ 28+  8DA6 40 02 00 00      defb 0x40, 0x02, 0x00, 0x00, 0x00, 0x46, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46, 0x46, 0x46, 0x40, 0x00, 0x00, 0x02, 0x00
+ 28+  8DAA 00 46 46 46
+ 28+  8DAE 00 00 00 00
+ 28+  8DB2 00 00 00 00
+ 28+  8DB6 00 00 00 00
+ 28+  8DBA 00 00 00 00
+ 28+  8DBE 46 46 46 40
+ 28+  8DC2 00 00 02 00
+ 29+  8DC6
+ 30+  8DC6
+ 31+  8DC6
+# file closed: /home/carles/Projectes/zx/parachute/parachute_logo.asm
+857   8DC6              	include "parachute_screen_lib.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_screen_lib.asm
+  1+  8DC6              ; Get screen address
+  2+  8DC6              ; B = Y pixel position
+  3+  8DC6              ; C = X pixel position
+  4+  8DC6              ; Returns address in DE and pixel position within character in A
+  5+  8DC6              ; usa bc, hl, a
+  6+  8DC6              get_pixel_addressDE:
+  7+  8DC6
+  8+  8DC6 78           				LD A,B			; Calculate Y2,Y1,Y0
+  9+  8DC7 E6 07        				AND %00000111	; Mask out unwanted bits
+ 10+  8DC9 F6 40        				OR %01000000	; Set base address of screen
+ 11+  8DCB 57           				LD D,A			; Store in H
+ 12+  8DCC 78           				LD A,B			; Calculate Y7,Y6
+ 13+  8DCD 1F           				RRA				; Shift to position
+ 14+  8DCE 1F           				RRA
+ 15+  8DCF 1F           				RRA
+ 16+  8DD0 E6 18        				AND %00011000	; Mask out unwanted bits
+ 17+  8DD2 B2           				OR D			; OR with Y2,Y1,Y0
+ 18+  8DD3 57           				LD D,A			; Store in H
+ 19+  8DD4 78           				LD A,B			; Calculate Y5,Y4,Y3
+ 20+  8DD5 17           				RLA				; Shift to position
+ 21+  8DD6 17           				RLA
+ 22+  8DD7 E6 E0        				AND %11100000	; Mask out unwanted bits
+ 23+  8DD9 5F           				LD E,A			; Store in L
+ 24+  8DDA 79           				LD A,C			; Calculate X4,X3,X2,X1,X0
+ 25+  8DDB 1F           				RRA				; Shift into position
+ 26+  8DDC 1F           				RRA
+ 27+  8DDD 1F           				RRA
+ 28+  8DDE E6 1F        				AND %00011111	; Mask out unwanted bits
+ 29+  8DE0 B3           				OR E			; OR with Y5,Y4,Y3
+ 30+  8DE1 5F           				LD E,A			; Store in L
+ 31+  8DE2
+ 32+  8DE2 79           				LD A,C			; keep offset in a
+ 33+  8DE3 E6 07        				AND 7
+ 34+  8DE5 C9           				RET
+ 35+  8DE6
+ 36+  8DE6
+ 37+  8DE6              Pixel_Address_Down_DE:
+ 38+  8DE6
+ 39+  8DE6 14           				INC D			; Go down onto the next pixel line
+ 40+  8DE7 7A           				LD A,D			; Check if we have gone onto next character boundary
+ 41+  8DE8 E6 07        				AND 7
+ 42+  8DEA C0           				RET NZ			; No, so skip the next bit
+ 43+  8DEB 7B           				LD A,E			; Go onto the next character line
+ 44+  8DEC C6 20        				ADD A,32
+ 45+  8DEE 5F           				LD E,A
+ 46+  8DEF D8           				RET C			; Check if we have gone onto next third of screen
+ 47+  8DF0 7A           				LD A,D			; Yes, so go onto next third
+ 48+  8DF1 D6 08        				SUB 8
+ 49+  8DF3 57           				LD D,A
+ 50+  8DF4 C9           				RET
+ 51+  8DF5
+ 52+  8DF5              ; bc = y x
+ 53+  8DF5              ; hl = sprite structure
+ 54+  8DF5              pintaspriteOr:
+ 55+  8DF5
+ 56+  8DF5 CD C6 8D     				call get_pixel_addressDE
+ 57+  8DF8
+ 58+  8DF8 7E           				ld a, (hl)
+ 59+  8DF9 CB 3F        				srl a
+ 60+  8DFB CB 3F        				srl a
+ 61+  8DFD CB 3F        				srl a
+ 62+  8DFF 32 07 8E     				ld (pintaspriteOr_keepx+1), a
+ 63+  8E02
+ 64+  8E02 23           				inc hl
+ 65+  8E03 7E           				ld a, (hl)
+ 66+  8E04 23           				inc hl
+ 67+  8E05
+ 68+  8E05              pintaspriteOr_loopy:
+ 69+  8E05 D5           				push de
+ 70+  8E06              pintaspriteOr_keepx:
+ 71+  8E06 06 00        				ld b, 0x00			; dynamically modified
+ 72+  8E08 08           				ex af, af'
+ 73+  8E09              pintaspriteOr_loopx:
+ 74+  8E09 1A           				ld a,(de)
+ 75+  8E0A 4E           				ld c,(hl)
+ 76+  8E0B B1           				or c
+ 77+  8E0C 12           				ld (de), a
+ 78+  8E0D 13           				inc de
+ 79+  8E0E 23           				inc hl
+ 80+  8E0F 10 F8        				djnz pintaspriteOr_loopx
+ 81+  8E11
+ 82+  8E11 D1           				pop de
+ 83+  8E12 CD E6 8D     				call Pixel_Address_Down_DE
+ 84+  8E15 08           				ex af, af'
+ 85+  8E16 3D           				dec a
+ 86+  8E17 20 EC        				jr nz, pintaspriteOr_loopy
+ 87+  8E19
+ 88+  8E19 C9           				ret
+ 89+  8E1A
+ 90+  8E1A
+ 91+  8E1A              ; bc = y x
+ 92+  8E1A              ; hl = sprite structure
+ 93+  8E1A              pintaspriteMask:
+ 94+  8E1A CD C6 8D     				call get_pixel_addressDE
+ 95+  8E1D
+ 96+  8E1D 7E           				ld a, (hl)
+ 97+  8E1E CB 3F        				srl a
+ 98+  8E20 CB 3F        				srl a
+ 99+  8E22 CB 3F        				srl a
+100+  8E24 32 2C 8E     				ld (pintaspriteMask_keepx+1), a
+101+  8E27
+102+  8E27 23           				inc hl
+103+  8E28 7E           				ld a, (hl)
+104+  8E29 23           				inc hl
+105+  8E2A
+106+  8E2A              pintaspriteMask_loopy:
+107+  8E2A D5           				push de
+108+  8E2B              pintaspriteMask_keepx:
+109+  8E2B 06 00        				ld b, 0x00			; dynamically modified
+110+  8E2D 08           				ex af, af'
+111+  8E2E              pintaspriteMask_loopx:
+112+  8E2E 7E           				ld a,(hl)
+113+  8E2F 2F           				cpl
+114+  8E30 4F           				ld c, a
+115+  8E31 1A           				ld a,(de)
+116+  8E32 A1           				and c
+117+  8E33 12           				ld (de), a
+118+  8E34 13           				inc de
+119+  8E35 23           				inc hl
+120+  8E36 10 F6        				djnz pintaspriteMask_loopx
+121+  8E38
+122+  8E38 D1           				pop de
+123+  8E39 CD E6 8D     				call Pixel_Address_Down_DE
+124+  8E3C 08           				ex af, af'
+125+  8E3D 3D           				dec a
+126+  8E3E 20 EA        				jr nz, pintaspriteMask_loopy
+127+  8E40
+128+  8E40 C9           				ret
+129+  8E41
+130+  8E41
+# file closed: /home/carles/Projectes/zx/parachute/parachute_screen_lib.asm
+858   8E41              	include "parachute_digits.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_digits.asm
+  1+  8E41              ; bc = coordinates
+  2+  8E41              ; a = digit
+  3+  8E41
+  4+  8E41              pinta_digit:
+  5+  8E41
+  6+  8E41 21 A8 8E     			ld hl, segments_digit_0
+  7+  8E44 85           			add l
+  8+  8E45 6F           			ld l, a
+  9+  8E46 7E           			ld a, (hl)
+ 10+  8E47
+ 11+  8E47 16 06        			ld d, 6
+ 12+  8E49 DD 21 7F 8E  			ld ix, digits_def
+ 13+  8E4D
+ 14+  8E4D              pinta_digit_loop:
+ 15+  8E4D
+ 16+  8E4D F5           			push af
+ 17+  8E4E D5           			push de
+ 18+  8E4F C5           			push bc
+ 19+  8E50
+ 20+  8E50 DD 6E 00     				ld l, (ix+0)
+ 21+  8E53 DD 23        				inc ix
+ 22+  8E55 DD 66 00     				ld h, (ix+0)
+ 23+  8E58 DD 23        				inc ix
+ 24+  8E5A DD 5E 00     				ld e, (ix+0)
+ 25+  8E5D DD 23        				inc ix
+ 26+  8E5F DD 56 00     				ld d, (ix+0)
+ 27+  8E62 DD 23        				inc ix
+ 28+  8E64
+ 29+  8E64 E6 01        				and 1
+ 30+  8E66 28 08        				jr z, pinta_digit_neg
+ 31+  8E68 CD 9B 8E     					call BCaddDE_simple
+ 32+  8E6B CD F5 8D     					call pintaspriteOr
+ 33+  8E6E 18 06        					jr pinta_digit_cont
+ 34+  8E70
+ 35+  8E70              pinta_digit_neg:
+ 36+  8E70 CD 9B 8E     					call BCaddDE_simple
+ 37+  8E73 CD 1A 8E     					call pintaspriteMask
+ 38+  8E76
+ 39+  8E76              pinta_digit_cont:
+ 40+  8E76 C1           			pop bc
+ 41+  8E77 D1           			pop de
+ 42+  8E78 F1           			pop af
+ 43+  8E79 1F           			rra
+ 44+  8E7A
+ 45+  8E7A 15           			dec d
+ 46+  8E7B F2 4D 8E     			jp p, pinta_digit_loop
+ 47+  8E7E
+ 48+  8E7E C9           			ret
+ 49+  8E7F
+ 50+  8E7F
+ 51+  8E7F              digits_def:
+ 52+  8E7F B2 8E 00 01  			defw	img_seg_top, 0x0100
+ 53+  8E83 B8 8E 08 03  			defw	img_seg_top_right, 0x0308
+ 54+  8E87 BF 8E 08 0C  			defw	img_seg_bottom_right, 0x0c08
+ 55+  8E8B C7 8E 00 12  			defw	img_seg_bottom, 0x1200
+ 56+  8E8F CD 8E 00 0C  			defw	img_seg_bottom_left, 0x0c00
+ 57+  8E93 D5 8E 00 03  			defw	img_seg_top_left, 0x0300
+ 58+  8E97 DC 8E 00 09  			defw	img_seg_middle, 0x0900
+ 59+  8E9B
+ 60+  8E9B              BCaddDE_simple:
+ 61+  8E9B 79           			ld a, c
+ 62+  8E9C 83           			add e
+ 63+  8E9D 4F           			ld c, a
+ 64+  8E9E
+ 65+  8E9E 78           			ld a, b
+ 66+  8E9F 8A           			adc d
+ 67+  8EA0 47           			ld b, a
+ 68+  8EA1
+ 69+  8EA1 C9           			ret
+ 70+  8EA2
+ 71+  8EA2
+ 72+  8EA2 00 00 00...  	align 0x8
+ 73+  8EA8
+ 74+  8EA8 3F           segments_digit_0:	defb	%00111111
+ 75+  8EA9 06           segments_digit_1:	defb	%00000110
+ 76+  8EAA 5B           segments_digit_2:	defb	%01011011
+ 77+  8EAB 4F           segments_digit_3:	defb	%01001111
+ 78+  8EAC 66           segments_digit_4:	defb	%01100110
+ 79+  8EAD 6D           segments_digit_5:	defb	%01101101
+ 80+  8EAE 7D           segments_digit_6:	defb	%01111101
+ 81+  8EAF 07           segments_digit_7:	defb	%00000111
+ 82+  8EB0 7F           segments_digit_8:	defb	%01111111
+ 83+  8EB1 6F           segments_digit_9:	defb	%01101111
+ 84+  8EB2
+ 85+  8EB2
+ 86+  8EB2              img_seg_top:
+ 87+  8EB2
+ 88+  8EB2 10 02        	defb	16, 2
+ 89+  8EB4 07 F0        	defb	%00000111, %11110000
+ 90+  8EB6 03 E0        	defb	%00000011, %11100000
+ 91+  8EB8
+ 92+  8EB8              img_seg_top_right:
+ 93+  8EB8
+ 94+  8EB8 08 05        	defb	8, 5
+ 95+  8EBA 08           	defb	%00001000
+ 96+  8EBB 18           	defb	%00011000
+ 97+  8EBC 18           	defb	%00011000
+ 98+  8EBD 18           	defb	%00011000
+ 99+  8EBE 18           	defb	%00011000
+100+  8EBF
+101+  8EBF              img_seg_bottom_right:
+102+  8EBF
+103+  8EBF 08 06        	defb	8, 6
+104+  8EC1 10           	defb	%00010000
+105+  8EC2 30           	defb	%00110000
+106+  8EC3 30           	defb	%00110000
+107+  8EC4 30           	defb	%00110000
+108+  8EC5 30           	defb	%00110000
+109+  8EC6 10           	defb	%00010000
+110+  8EC7
+111+  8EC7              img_seg_bottom:
+112+  8EC7
+113+  8EC7 10 02        	defb	16, 2
+114+  8EC9 07 C0        	defb	%00000111, %11000000
+115+  8ECB 0F E0        	defb	%00001111, %11100000
+116+  8ECD
+117+  8ECD              img_seg_bottom_left:
+118+  8ECD
+119+  8ECD 08 06        	defb	8, 6
+120+  8ECF 10           	defb	%00010000
+121+  8ED0 18           	defb	%00011000
+122+  8ED1 18           	defb	%00011000
+123+  8ED2 18           	defb	%00011000
+124+  8ED3 18           	defb	%00011000
+125+  8ED4 10           	defb	%00010000
+126+  8ED5
+127+  8ED5              img_seg_top_left:
+128+  8ED5
+129+  8ED5 08 05        	defb	8, 5
+130+  8ED7 08           	defb	%00001000
+131+  8ED8 0C           	defb	%00001100
+132+  8ED9 0C           	defb	%00001100
+133+  8EDA 0C           	defb	%00001100
+134+  8EDB 08           	defb	%00001000
+135+  8EDC
+136+  8EDC              img_seg_middle:
+137+  8EDC
+138+  8EDC 10 02        	defb	16, 2
+139+  8EDE 07 F0        	defb	%00000111, %11110000
+140+  8EE0 0F E0        	defb	%00001111, %11100000
+141+  8EE2
+142+  8EE2
+143+  8EE2
+# file closed: /home/carles/Projectes/zx/parachute/parachute_digits.asm
+859   8EE2              	include "parachute_clock.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_clock.asm
+  1+  8EE2
+  2+  8EE2              update_clock_dots:
+  3+  8EE2
+  4+  8EE2 3A 76 84     				ld a, (playing)
+  5+  8EE5 4F           				ld c, a
+  6+  8EE6 3A 7B 84     				ld a, (score)			; if there's score don't show clock
+  7+  8EE9 47           				ld b, a
+  8+  8EEA 3A 7C 84     				ld a, (score+1)
+  9+  8EED B0           				or b
+ 10+  8EEE B1           				or c
+ 11+  8EEF CA F7 8E     				jp z, update_clock_dots_time
+ 12+  8EF2 AF           					xor a
+ 13+  8EF3 32 11 86     					ld (i_digit_separator),a
+ 14+  8EF6 C9           					ret
+ 15+  8EF7
+ 16+  8EF7              update_clock_dots_time:
+ 17+  8EF7 3A 77 84     				ld a, (time_50s)
+ 18+  8EFA FE 19        				cp 25
+ 19+  8EFC 38 03        				jr c, update_clock_dots_show
+ 20+  8EFE              update_clock_dots_cont2:
+ 21+  8EFE AF           					xor a
+ 22+  8EFF 18 02        					jr update_clock_dots_cont
+ 23+  8F01              update_clock_dots_show:
+ 24+  8F01 3E 01        				ld a, 1
+ 25+  8F03              update_clock_dots_cont:
+ 26+  8F03 32 11 86     				ld (i_digit_separator),a
+ 27+  8F06 C9           				ret
+ 28+  8F07
+ 29+  8F07              update_clock:
+ 30+  8F07 3A 76 84     				ld a, (playing)
+ 31+  8F0A 4F           				ld c, a
+ 32+  8F0B 3A 7B 84     				ld a, (score)			; if there's score don't show clock
+ 33+  8F0E 47           				ld b, a
+ 34+  8F0F 3A 7C 84     				ld a, (score+1)
+ 35+  8F12 B0           				or b
+ 36+  8F13 B1           				or c
+ 37+  8F14 C2 AF 8F     				jp nz, update_score
+ 38+  8F17
+ 39+  8F17
+ 40+  8F17 3A 79 84     				ld a, (time_minute)
+ 41+  8F1A 57           				ld d, a
+ 42+  8F1B 1E 0A        				ld e, 10
+ 43+  8F1D CD 83 90     				call div_d_e		; reminder in a
+ 44+  8F20
+ 45+  8F20 01 50 18     				ld bc,0x1850
+ 46+  8F23 CD 41 8E     				call pinta_digit
+ 47+  8F26
+ 48+  8F26 3A 79 84     				ld a, (time_minute)
+ 49+  8F29 57           				ld d, a
+ 50+  8F2A 1E 0A        				ld e, 10
+ 51+  8F2C CD 83 90     				call div_d_e		; quotient in d
+ 52+  8F2F 7A           				ld a, d
+ 53+  8F30
+ 54+  8F30 01 40 18     				ld bc,0x1840
+ 55+  8F33 CD 41 8E     				call pinta_digit
+ 56+  8F36
+ 57+  8F36 3A 7A 84     				ld a, (time_hour)		; 12 h get a
+ 58+  8F39 57           				ld d, a
+ 59+  8F3A 1E 0C        				ld e, 12
+ 60+  8F3C CD 83 90     				call div_d_e
+ 61+  8F3F F5           				push af
+ 62+  8F40
+ 63+  8F40 57           				ld d, a
+ 64+  8F41 1E 0A        				ld e, 10
+ 65+  8F43 CD 83 90     				call div_d_e		; reminder in a
+ 66+  8F46
+ 67+  8F46 01 28 18     				ld bc,0x1828
+ 68+  8F49 CD 41 8E     				call pinta_digit
+ 69+  8F4C
+ 70+  8F4C F1           				pop af
+ 71+  8F4D 57           				ld d, a
+ 72+  8F4E 1E 0A        				ld e, 10
+ 73+  8F50 CD 83 90     				call div_d_e		; quotient in d
+ 74+  8F53 7A           				ld a, d
+ 75+  8F54
+ 76+  8F54 01 18 18     				ld bc,0x1818
+ 77+  8F57 CD 41 8E     				call pinta_digit
+ 78+  8F5A
+ 79+  8F5A 3A 7A 84     				ld a, (time_hour)		; 12 h get a
+ 80+  8F5D 57           				ld d, a
+ 81+  8F5E 1E 0C        				ld e, 12
+ 82+  8F60 CD 83 90     				call div_d_e
+ 83+  8F63 7A           				ld a, d
+ 84+  8F64 B7           				or a
+ 85+  8F65 28 09        				jr z, update_clock_am
+ 86+  8F67 AF           					xor a
+ 87+  8F68 32 0D 86     					ld (i_am), a
+ 88+  8F6B 3C           					inc a
+ 89+  8F6C 32 0E 86     					ld (i_pm), a
+ 90+  8F6F C9           					ret
+ 91+  8F70
+ 92+  8F70              update_clock_am:
+ 93+  8F70 AF           					xor a
+ 94+  8F71 32 0E 86     					ld (i_pm), a
+ 95+  8F74 3C           					inc a
+ 96+  8F75 32 0D 86     					ld (i_am), a
+ 97+  8F78
+ 98+  8F78 C9           					ret
+ 99+  8F79
+100+  8F79
+101+  8F79              clock_keys:
+102+  8F79 26 00                        ld h, 0         ; h=0 no update, h=1 time changed
+103+  8F7B
+104+  8F7B 06 BF        				ld b, KEYSEG_LKJH
+105+  8F7D 16 10        				ld d, KEY_H
+106+  8F7F CD 76 85     				call checkkey
+107+  8F82 28 0E                        jr z, clock_keys_minute
+108+  8F84 26 01                            ld h, 1
+109+  8F86 3A 7A 84                         ld a, (time_hour)
+110+  8F89 3C                               inc a
+111+  8F8A FE 18                            cp 24
+112+  8F8C 20 01                            jr nz, clock_keys_hour_cont
+113+  8F8E AF                                   xor a
+114+  8F8F              clock_keys_hour_cont:
+115+  8F8F 32 7A 84                         ld (time_hour), a
+116+  8F92
+117+  8F92
+118+  8F92              clock_keys_minute:
+119+  8F92 06 7F                        ld b, KEYSEG_MNB
+120+  8F94 16 04        				ld d, KEY_M
+121+  8F96 CD 76 85     				call checkkey
+122+  8F99 28 0E                        jr z, clock_keys_cont
+123+  8F9B 26 01        				    ld h, 1
+124+  8F9D 3A 79 84                         ld a, (time_minute)
+125+  8FA0 3C                               inc a
+126+  8FA1 FE 3C                            cp 60
+127+  8FA3 20 01                            jr nz, clock_keys_minute_cont
+128+  8FA5 AF                                   xor a
+129+  8FA6              clock_keys_minute_cont:
+130+  8FA6 32 79 84                         ld (time_minute), a
+131+  8FA9
+132+  8FA9              clock_keys_cont:
+133+  8FA9 7C                               ld a, h
+134+  8FAA B7                               or a
+135+  8FAB C8                               ret z
+136+  8FAC
+137+  8FAC C3 07 8F                         jp update_clock
+138+  8FAF
+139+  8FAF
+140+  8FAF
+141+  8FAF              update_score:
+142+  8FAF 2A 7B 84     				ld hl, (score)
+143+  8FB2 0E 0A        				ld c, 10
+144+  8FB4 CD 91 90     				call div_hl_c
+145+  8FB7
+146+  8FB7 E5           				push hl
+147+  8FB8 01 50 18     				ld bc,0x1850
+148+  8FBB CD 41 8E     				call pinta_digit
+149+  8FBE E1           				pop hl
+150+  8FBF
+151+  8FBF 0E 0A        				ld c, 10
+152+  8FC1 CD 91 90     				call div_hl_c
+153+  8FC4
+154+  8FC4 E5           				push hl
+155+  8FC5 01 40 18     				ld bc,0x1840
+156+  8FC8 CD 41 8E     				call pinta_digit
+157+  8FCB E1           				pop hl
+158+  8FCC
+159+  8FCC 7D           				ld a, l
+160+  8FCD 01 28 18     				ld bc,0x1828
+161+  8FD0 CD 41 8E     				call pinta_digit
+162+  8FD3
+163+  8FD3 AF           				xor a
+164+  8FD4 32 0D 86     				ld (i_am), a
+165+  8FD7 32 0E 86     				ld (i_pm), a
+166+  8FDA 32 11 86     				ld (i_digit_separator), a
+167+  8FDD
+168+  8FDD C9           				ret
+169+  8FDE
+170+  8FDE
+# file closed: /home/carles/Projectes/zx/parachute/parachute_clock.asm
+860   8FDE              	include "parachute_sounds.asm"
+# file opened: /home/carles/Projectes/zx/parachute/parachute_sounds.asm
+  1+  8FDE
+  2+  8FDE              move_parachute_sound:
+  3+  8FDE 21 F1 00     				ld hl, 0xf1
+  4+  8FE1 11 02 00     				ld de, 2
+  5+  8FE4 CD 0D 91     				call beeper
+  6+  8FE7 C9           				ret
+  7+  8FE8
+  8+  8FE8              parachute_rescued_sound:
+  9+  8FE8
+ 10+  8FE8 06 1A        				ld b, 0x1a
+ 11+  8FEA              parachute_rescued_sound_loop:
+ 12+  8FEA C5           				push bc
+ 13+  8FEB
+ 14+  8FEB 21 CA 00     				ld hl, 0xca
+ 15+  8FEE 11 02 00     				ld de, 2
+ 16+  8FF1 CD 0D 91     				call beeper
+ 17+  8FF4
+ 18+  8FF4 06 C8        				ld b, 200				; use nops to produce broken sound
+ 19+  8FF6              parachute_rescued_sound_loop2:
+ 20+  8FF6 00           				nop
+ 21+  8FF7 00           				nop
+ 22+  8FF8 10 FC        				djnz parachute_rescued_sound_loop2
+ 23+  8FFA
+ 24+  8FFA C1           				pop bc
+ 25+  8FFB 10 ED        				djnz parachute_rescued_sound_loop
+ 26+  8FFD
+ 27+  8FFD C9           				ret
+ 28+  8FFE
+ 29+  8FFE              parachute_lost_sound:
+ 30+  8FFE 06 1A        				ld b, 0x1a
+ 31+  9000              parachute_lost_sound_loop:
+ 32+  9000 C5           				push bc
+ 33+  9001
+ 34+  9001 21 CA 01     				ld hl, 0x1ca
+ 35+  9004 11 02 00     				ld de, 2
+ 36+  9007 CD 0D 91     				call beeper
+ 37+  900A
+ 38+  900A 06 C8        				ld b, 200				; use nops to produce broken sound
+ 39+  900C              parachute_lost_sound_loop2:
+ 40+  900C 00           				nop
+ 41+  900D 00           				nop
+ 42+  900E 10 FC        				djnz parachute_lost_sound_loop2
+ 43+  9010
+ 44+  9010 C1           				pop bc
+ 45+  9011 10 ED        				djnz parachute_lost_sound_loop
+ 46+  9013
+ 47+  9013 C9           				ret
+# file closed: /home/carles/Projectes/zx/parachute/parachute_sounds.asm
+861   9014
+862   9014              	include 'libs/random_lib.asm'
+# file opened: /home/carles/Projectes/zx/parachute/libs/random_lib.asm
+  1+  9014              ; Fast RND
+  2+  9014              ;
+  3+  9014              ; An 8-bit pseudo-random number generator,
+  4+  9014              ; using a similar method to the Spectrum ROM,
+  5+  9014              ; - without the overhead of the Spectrum ROM.
+  6+  9014              ;
+  7+  9014              ; R = random number seed
+  8+  9014              ; an integer in the range [1, 256]
+  9+  9014              ;
+ 10+  9014              ; R -> (33*R) mod 257
+ 11+  9014              ;
+ 12+  9014              ; S = R - 1
+ 13+  9014              ; an 8-bit unsigned integer
+ 14+  9014
+ 15+  9014
+ 16+  9014              ;modifies b, a
+ 17+  9014
+ 18+  9014              random:
+ 19+  9014
+ 20+  9014 3A 2E 90     	 ld a, (random_seed)
+ 21+  9017 47           	 ld b, a
+ 22+  9018 ED 5F        	 ld a,r
+ 23+  901A A8           	 xor b
+ 24+  901B 47           	 ld b, a
+ 25+  901C
+ 26+  901C
+ 27+  901C 0F           	 rrca ; multiply by 32
+ 28+  901D 0F           	 rrca
+ 29+  901E 0F           	 rrca
+ 30+  901F EE 1F        	 xor 0x1f
+ 31+  9021
+ 32+  9021 80           	 add a, b
+ 33+  9022 DE FF        	 sbc a, 255 ; carry
+ 34+  9024
+ 35+  9024 32 2E 90     	 ld (random_seed), a
+ 36+  9027 C9           	 ret
+ 37+  9028
+ 38+  9028              randomize:
+ 39+  9028 ED 5F        	ld a, r
+ 40+  902A 32 2E 90     	ld (random_seed), a
+ 41+  902D C9           	ret
+ 42+  902E
+ 43+  902E 00           random_seed:	defb	0
+ 44+  902F
+ 45+  902F
+ 46+  902F
+ 47+  902F
+ 48+  902F
+# file closed: /home/carles/Projectes/zx/parachute/libs/random_lib.asm
+863   902F              	include 'libs/math_lib.asm'
+# file opened: /home/carles/Projectes/zx/parachute/libs/math_lib.asm
+  1+  902F              ; based on https://wikiti.brandonw.net/index.php?title=Z80_Routines:Math:Multiplication
+  2+  902F              ; https://wikiti.brandonw.net/index.php?title=Z80_Routines:Math:Division
+  3+  902F
+  4+  902F
+  5+  902F              ; 8*8 multiplication
+  6+  902F              ; The following routine multiplies h by e and places the result in hl
+  7+  902F              ; uses hl, de, b
+  8+  902F              mult_h_e:
+  9+  902F 2E 00        		ld	l, 0
+ 10+  9031 55           		ld	d, l
+ 11+  9032
+ 12+  9032 CB 24        		sla	h		; optimised 1st iteration
+ 13+  9034 30 01        		jr	nc, mult_h_e_skip
+ 14+  9036 6B           		ld	l, e
+ 15+  9037              mult_h_e_skip:
+ 16+  9037 06 07        		ld b, 7
+ 17+  9039              mult_h_e_loop:
+ 18+  9039 29           		add	hl, hl
+ 19+  903A 30 01        		jr	nc, mult_h_e_break
+ 20+  903C 19           		add	hl, de
+ 21+  903D
+ 22+  903D              mult_h_e_break:
+ 23+  903D 10 FA        		djnz	mult_h_e_loop
+ 24+  903F
+ 25+  903F C9           		ret
+ 26+  9040
+ 27+  9040              ; 16*8 multiplication
+ 28+  9040              ; The following routine multiplies de by a and places the result in ahl
+ 29+  9040              ; (which means a is the most significant byte of the product,
+ 30+  9040              ; l the least significant and h the intermediate one...)
+ 31+  9040              mult_a_de
+ 32+  9040 0E 00        		ld	c, 0
+ 33+  9042 61           		ld	h, c
+ 34+  9043 6C           		ld	l, h
+ 35+  9044
+ 36+  9044 87           		add	a, a		; optimised 1st iteration
+ 37+  9045 30 02        		jr	nc, mult_a_de_skip
+ 38+  9047 62           		ld	h,d
+ 39+  9048 6B           		ld	l,e
+ 40+  9049
+ 41+  9049              mult_a_de_skip:
+ 42+  9049 06 07        		ld b, 7
+ 43+  904B              mult_a_de_loop:
+ 44+  904B 29           		add	hl, hl
+ 45+  904C 17           		rla
+ 46+  904D 30 02        		jr	nc, mult_a_de_break
+ 47+  904F 19           		add	hl, de
+ 48+  9050 89           		adc	a, c            ; yes this is actually adc a, 0 but since c is free we set it to zero and so we can save 1 byte and up to 3 T-states per iteration
+ 49+  9051
+ 50+  9051              mult_a_de_break:
+ 51+  9051 10 F8        		djnz	mult_a_de_loop
+ 52+  9053
+ 53+  9053 C9           		ret
+ 54+  9054
+ 55+  9054
+ 56+  9054              ;16*16 multiplication
+ 57+  9054              ;The following routine multiplies bc by de and places the result in dehl.
+ 58+  9054              mult_de_bc:
+ 59+  9054 21 00 00     		ld	hl, 0
+ 60+  9057
+ 61+  9057 CB 23        		sla	e		; optimised 1st iteration
+ 62+  9059 CB 12        		rl	d
+ 63+  905B 30 02        		jr	nc, mult_de_bc_skip
+ 64+  905D 60           		ld	h, b
+ 65+  905E 69           		ld	l, c
+ 66+  905F              mult_de_bc_skip:
+ 67+  905F 3E 0F        		ld	a, 15
+ 68+  9061              mult_de_bc_loop:
+ 69+  9061 29           		add	hl, hl
+ 70+  9062 CB 13        		rl	e
+ 71+  9064 CB 12        		rl	d
+ 72+  9066 30 04        		jr	nc, mult_de_bc_break
+ 73+  9068 09           		add	hl, bc
+ 74+  9069 30 01        		jr	nc, mult_de_bc_break
+ 75+  906B 13           		inc	de
+ 76+  906C              mult_de_bc_break:
+ 77+  906C 3D           		dec	a
+ 78+  906D 20 F2        		jr	nz, mult_de_bc_loop
+ 79+  906F
+ 80+  906F C9           		ret
+ 81+  9070
+ 82+  9070              ; from Daniel A. Nagy facebook post
+ 83+  9070              ; 16 bit multiplication
+ 84+  9070              ; In: BC,DE 16 bit multiplicands
+ 85+  9070              ; Out: HLAC 32 bit product
+ 86+  9070 AF           MULBCDE:XOR     A
+ 87+  9071 67                   LD      H,A
+ 88+  9072 6F                   LD      L,A
+ 89+  9073 78                   LD      A,B
+ 90+  9074 06 11                LD      B,$11
+ 91+  9076 CB 1C        MULL:   RR      H
+ 92+  9078 CB 1D                RR      L
+ 93+  907A 1F                   RRA
+ 94+  907B CB 19                RR      C
+ 95+  907D 30 01                JR      NC,MULNC
+ 96+  907F 19                   ADD     HL,DE
+ 97+  9080 10 F4        MULNC:  DJNZ    MULL
+ 98+  9082 C9                   RET
+ 99+  9083
+100+  9083
+101+  9083              ; 8/8 division
+102+  9083              ; The following routine divides d by e and places the quotient in d and the remainder in a
+103+  9083              ; modifies A, BC, DE
+104+  9083              div_d_e:
+105+  9083 AF           		   xor	a
+106+  9084 06 08        		   ld	b, 8
+107+  9086
+108+  9086              div_d_e_loop:
+109+  9086 CB 22        		   sla	d
+110+  9088 17           		   rla
+111+  9089 BB           		   cp	e
+112+  908A 38 02        		   jr	c, $+4
+113+  908C 93           		   sub	e
+114+  908D 14           		   inc	d
+115+  908E
+116+  908E 10 F6        		   djnz	div_d_e_loop
+117+  9090
+118+  9090 C9           		   ret
+119+  9091
+120+  9091              ; 16/8 division
+121+  9091              ; The following routine divides hl by c and places the quotient in hl and the remainder in a
+122+  9091
+123+  9091              div_hl_c:
+124+  9091 AF              xor	a
+125+  9092 06 10           ld	b, 16
+126+  9094
+127+  9094              div_hl_c_loop:
+128+  9094 29              add	hl, hl
+129+  9095 17              rla
+130+  9096 38 03           jr	c, $+5
+131+  9098 B9              cp	c
+132+  9099 38 02           jr	c, $+4
+133+  909B
+134+  909B 91              sub	c
+135+  909C 2C              inc	l
+136+  909D
+137+  909D 10 F5           djnz	div_hl_c_loop
+138+  909F
+139+  909F C9              ret
+140+  90A0
+141+  90A0              ; 16/16 division
+142+  90A0              ; The following routine divides ac by de and places the quotient in ac and the remainder in hl
+143+  90A0              div_ac_de:
+144+  90A0 21 00 00     		   ld	hl, 0
+145+  90A3 06 10        		   ld	b, 16
+146+  90A5
+147+  90A5              div_ac_de_loop:
+148+  90A5 CB 31        		   sll	c
+149+  90A7 17           		   rla
+150+  90A8 ED 6A        		   adc	hl, hl
+151+  90AA ED 52        		   sbc	hl, de
+152+  90AC 30 02        		   jr	nc, $+4
+153+  90AE 19           		   add	hl, de
+154+  90AF 0D           		   dec	c
+155+  90B0
+156+  90B0 10 F3        		   djnz	div_ac_de_loop
+157+  90B2
+158+  90B2 C9           		   ret
+159+  90B3
+160+  90B3              ; 24/8 division
+161+  90B3              ; The following routine divides ehl by d and places the quotient in ehl and the remainder in a
+162+  90B3              div_ehl_d:
+163+  90B3 AF           		   xor	a
+164+  90B4 06 18        		   ld	b, 24
+165+  90B6
+166+  90B6              div_ehl_d_loop:
+167+  90B6 29           		   add	hl, hl
+168+  90B7 CB 13        		   rl	e
+169+  90B9 17           		   rla
+170+  90BA 38 03        		   jr	c, $+5
+171+  90BC BA           		   cp	d
+172+  90BD 38 02        		   jr	c, $+4
+173+  90BF
+174+  90BF 92           		   sub	d
+175+  90C0 2C           		   inc	l
+176+  90C1
+177+  90C1 10 F3        		   djnz	div_ehl_d_loop
+178+  90C3
+179+  90C3 C9           		   ret
+180+  90C4
+181+  90C4              ; 32/8 division
+182+  90C4              ; The following routine divides dehl by c and places the quotient in dehl and the remainder in a
+183+  90C4              div_dehl_c:
+184+  90C4 AF           		   xor	a
+185+  90C5 06 20        		   ld	b, 32
+186+  90C7
+187+  90C7              div_dehl_c_loop:
+188+  90C7 29           		   add	hl, hl
+189+  90C8 CB 13        		   rl	e
+190+  90CA CB 12        		   rl	d
+191+  90CC 17           		   rla
+192+  90CD 38 03        		   jr	c, $+5
+193+  90CF B9           		   cp	c
+194+  90D0 38 02        		   jr	c, $+4
+195+  90D2
+196+  90D2 91           		   sub	c
+197+  90D3 2C           		   inc	l
+198+  90D4
+199+  90D4 10 F1        		   djnz	div_dehl_c_loop
+200+  90D6
+201+  90D6 C9           		   ret
+202+  90D7
+203+  90D7              ;32/16 division
+204+  90D7              ;The following routine divides acix by de and places the quotient in acix and the remainder in hl
+205+  90D7
+206+  90D7              Div32By16:
+207+  90D7              ; IN:	ACIX=dividend, DE=divisor
+208+  90D7              ; OUT:	ACIX=quotient, DE=divisor, HL=remainder, B=0
+209+  90D7 21 00 00     	ld	hl,0
+210+  90DA 06 20        	ld	b,32
+211+  90DC              Div32By16_Loop:
+212+  90DC DD 29        	add	ix,ix
+213+  90DE CB 11        	rl	c
+214+  90E0 17           	rla
+215+  90E1 ED 6A        	adc	hl,hl
+216+  90E3 38 08        	jr	c,Div32By16_Overflow
+217+  90E5 ED 52        	sbc	hl,de
+218+  90E7 30 07        	jr	nc,Div32By16_SetBit
+219+  90E9 19           	add	hl,de
+220+  90EA 10 F0        	djnz	Div32By16_Loop
+221+  90EC C9           	ret
+222+  90ED              Div32By16_Overflow:
+223+  90ED B7           	or	a
+224+  90EE ED 52        	sbc	hl,de
+225+  90F0              Div32By16_SetBit:
+226+  90F0              	;.db	$DD,$2C		; inc ixl, change to inc ix to avoid undocumented
+227+  90F0 DD 2C        	inc ixl
+228+  90F2 10 E8        	djnz	Div32By16_Loop
+229+  90F4 C9           	ret
+230+  90F5
+231+  90F5              ; Rounded 16/8 division
+232+  90F5              ; The following routine divides hl by c and places the rounded quotient in hl and twice the prerounded remainder in a.
+233+  90F5
+234+  90F5              RoundHL_Div_C:
+235+  90F5 AF              xor	a
+236+  90F6 06 10           ld	b, 16
+237+  90F8
+238+  90F8              RoundHL_Div_C_loop:
+239+  90F8 29              add	hl, hl
+240+  90F9 17              rla
+241+  90FA 38 03           jr	c, $+5
+242+  90FC B9              cp	c
+243+  90FD 38 02           jr	c, $+4
+244+  90FF 91              sub	c
+245+  9100 2C              inc	l
+246+  9101 10 F5           djnz	RoundHL_Div_C_loop
+247+  9103              ;This part is the rounding
+248+  9103 87              add a,a
+249+  9104 B9              cp	c
+250+  9105 D8              ret	c
+251+  9106 23              inc hl
+252+  9107 C9              ret
+253+  9108
+254+  9108
+255+  9108              ; absolute value of a
+256+  9108              absA:
+257+  9108 B7                   or a
+258+  9109 F0                   ret p
+259+  910A ED 44                neg
+260+  910C C9                   ret
+261+  910D
+# file closed: /home/carles/Projectes/zx/parachute/libs/math_lib.asm
+864   910D              	include 'libs/sound_lib.asm'
+# file opened: /home/carles/Projectes/zx/parachute/libs/sound_lib.asm
+  1+  910D              ; rom routine beeper - removed border stuff
+  2+  910D
+  3+  910D              beeper:
+  4+  910D
+  5+  910D F3           L03B5:  DI                      ; Disable Interrupts so they don't disturb timing
+  6+  910E 7D                   LD      A,L             ;
+  7+  910F CB 3D                SRL     L               ;
+  8+  9111 CB 3D                SRL     L               ; L = medium part of tone period
+  9+  9113 2F                   CPL                     ;
+ 10+  9114 E6 03                AND     $03             ; A = 3 - fine part of tone period
+ 11+  9116 4F                   LD      C,A             ;
+ 12+  9117 06 00                LD      B,$00           ;
+ 13+  9119 DD 21 21 91          LD      IX,L03D1        ; Address: BE-IX+3
+ 14+  911D DD 09                ADD     IX,BC           ;   IX holds address of entry into the loop
+ 15+  911F                                              ;   the loop will contain 0-3 NOPs, implementing
+ 16+  911F                                              ;   the fine part of the tone period.
+ 17+  911F
+ 18+  911F                      ;LD      A,($5C48)       ; BORDCR
+ 19+  911F                                         ; CARLES - border is black
+ 20+  911F
+ 21+  911F                      ;AND     $38             ; bits 5..3 contain border colour
+ 22+  911F                      ;RRCA                    ; border colour bits moved to 2..0
+ 23+  911F                      ;RRCA                    ;   to match border bits on port 0xFE
+ 24+  911F                      ;RRCA                    ;
+ 25+  911F                      ;OR       $08            ; bit 3 set (tape output bit on port 0xFE)
+ 26+  911F 3E 08                ld a, $08
+ 27+  9121                                              ;   for loud sound output
+ 28+  9121              ;; BE-IX+3
+ 29+  9121 00           L03D1:  NOP              ;(4)   ; optionally executed NOPs for small
+ 30+  9122                                              ;   adjustments to tone period
+ 31+  9122              ;; BE-IX+2
+ 32+  9122 00           L03D2:  NOP              ;(4)   ;
+ 33+  9123
+ 34+  9123              ;; BE-IX+1
+ 35+  9123 00           L03D3:  NOP              ;(4)   ;
+ 36+  9124
+ 37+  9124              ;; BE-IX+0
+ 38+  9124 04           L03D4:  INC     B        ;(4)   ;
+ 39+  9125 0C                   INC     C        ;(4)   ;
+ 40+  9126
+ 41+  9126              ;; BE-H&L-LP
+ 42+  9126 0D           L03D6:  DEC     C        ;(4)   ; timing loop for duration of
+ 43+  9127 20 FD                JR      NZ,L03D6 ;(12/7);   high or low pulse of waveform
+ 44+  9129
+ 45+  9129 0E 3F                LD      C,$3F    ;(7)   ;
+ 46+  912B 05                   DEC     B        ;(4)   ;
+ 47+  912C C2 26 91             JP      NZ,L03D6 ;(10)  ; to BE-H&L-LP
+ 48+  912F
+ 49+  912F EE 10                XOR     $10      ;(7)   ; toggle output beep bit
+ 50+  9131 D3 FE                OUT     ($FE),A  ;(11)  ; output pulse
+ 51+  9133 44                   LD      B,H      ;(4)   ; B = coarse part of tone period
+ 52+  9134 4F                   LD      C,A      ;(4)   ; save port 0xFE output byte
+ 53+  9135 CB 67                BIT     4,A      ;(8)   ; if new output bit is high, go
+ 54+  9137 20 09                JR      NZ,L03F2 ;(12/7);   to BE-AGAIN
+ 55+  9139
+ 56+  9139 7A                   LD      A,D      ;(4)   ; one cycle of waveform has completed
+ 57+  913A B3                   OR      E        ;(4)   ;   (low->low). if cycle countdown = 0
+ 58+  913B 28 09                JR      Z,L03F6  ;(12/7);   go to BE-END
+ 59+  913D
+ 60+  913D 79                   LD      A,C      ;(4)   ; restore output byte for port 0xFE
+ 61+  913E 4D                   LD      C,L      ;(4)   ; C = medium part of tone period
+ 62+  913F 1B                   DEC     DE       ;(6)   ; decrement cycle count
+ 63+  9140 DD E9                JP      (IX)     ;(8)   ; do another cycle
+ 64+  9142
+ 65+  9142              ;; BE-AGAIN                     ; halfway through cycle
+ 66+  9142 4D           L03F2:  LD      C,L      ;(4)   ; C = medium part of tone period
+ 67+  9143 0C                   INC     C        ;(4)   ; adds 16 cycles to make duration of high = duration of low
+ 68+  9144 DD E9                JP      (IX)     ;(8)   ; do high pulse of tone
+ 69+  9146
+ 70+  9146              ;; BE-END
+ 71+  9146 FB           L03F6:  EI                      ; Enable Interrupts
+ 72+  9147 C9                   RET
+# file closed: /home/carles/Projectes/zx/parachute/libs/sound_lib.asm
+865   9148
+866   9148
+867   9148              	include 'libs/interrupt_lib.asm' ; always include last line or before org
+# file opened: /home/carles/Projectes/zx/parachute/libs/interrupt_lib.asm
+  1+  9148
+  2+  9148
+  3+  9148              ; Sets im2 to interrupt pointer to DE.
+  4+  9148              ; Creates a interrupt table from FA00 to FB02 with $FC (129 par entries).
+  5+  9148              ; Elones IM2Routine to $FCFC to avoid code segmenting
+  6+  9148              ; Enables interrupts on exit
+  7+  9148              ;
+  8+  9148              ; de = interrupt pointer
+  9+  9148              ; uses hl, de, bc,
+ 10+  9148
+ 11+  9148
+ 12+  9148              setInterruptTo:
+ 13+  9148
+ 14+  9148 21 78 91     		ld hl, interruptcallfunction
+ 15+  914B 23           		inc hl
+ 16+  914C 73           		ld (hl), e
+ 17+  914D 23           		inc hl
+ 18+  914E 72           		ld (hl), d
+ 19+  914F
+ 20+  914F              ; move interrupt routine to $FCFC
+ 21+  914F 21 70 91     		ld hl, IM2Routine
+ 22+  9152 11 FC FC     		ld de, $FCFC
+ 23+  9155 01 17 00     		ld bc, IM2RoutineEnd - IM2Routine + 1
+ 24+  9158 ED B0        		ldir
+ 25+  915A
+ 26+  915A              ; Setup the 128 entry vector table
+ 27+  915A F3           		di
+ 28+  915B
+ 29+  915B 21 00 FA     		ld            hl, $FA00		; VectorTable FA00 to FB02 acopied by VectorTable
+ 30+  915E 11 FC FC     		ld            de, $FCFC; IM2Routine
+ 31+  9161 06 81        		ld            b, 129
+ 32+  9163
+ 33+  9163              		; Setup the I register (the high byte of the table)
+ 34+  9163 7C           		ld            a, h
+ 35+  9164 ED 47        		ld            i, a
+ 36+  9166
+ 37+  9166              		; Loop to set all 128 entries in the table
+ 38+  9166              1:
+ 39+  9166 73           		ld            (hl), e
+ 40+  9167 23           		inc           hl
+ 41+  9168 72           		ld            (hl), d
+ 42+  9169 23           		inc           hl
+ 43+  916A 10 FA        		djnz          1B
+ 44+  916C
+ 45+  916C              		; Setup IM2 mode
+ 46+  916C ED 5E        		im            2
+ 47+  916E FB           		ei
+ 48+  916F C9           		ret
+ 49+  9170
+ 50+  9170              ; This default callback does not store alternative registers
+ 51+  9170              ; So if you are going to use them in your interrupt routine
+ 52+  9170              ; save and restore them before returning
+ 53+  9170              ;
+ 54+  9170              IM2Routine:
+ 55+  9170 F5           		push af             ; preserve registers.
+ 56+  9171 C5           		push bc
+ 57+  9172 E5           		push hl
+ 58+  9173 D5           		push de
+ 59+  9174 DD E5        		push ix
+ 60+  9176 FD E5        		push iy
+ 61+  9178              interruptcallfunction:
+ 62+  9178 CD 00 00     		call #0000          ;	:replaced as SetInterruptTo
+ 63+  917B              		;rst 56              ; ROM routine, read keys and update clock.
+ 64+  917B
+ 65+  917B FD E1        		pop iy				; restore registers.
+ 66+  917D DD E1        		pop ix              ;
+ 67+  917F D1           		pop de
+ 68+  9180 E1           		pop hl
+ 69+  9181 C1           		pop bc
+ 70+  9182 F1           		pop af
+ 71+  9183
+ 72+  9183 FB           		ei                  ; always re-enable interrupts before returning.
+ 73+  9184 ED 4D        		reti                ; done.
+ 74+  9186
+ 75+  9186              IM2RoutineEnd:
+# file closed: /home/carles/Projectes/zx/parachute/libs/interrupt_lib.asm
+868   9186
+869   9186              fi:
+870   9186
+871   9186              	if 1
+872   9186
+873   9186              		SAVEBIN "bin/parachutecode.bin", inici, fi-inici
+874   9186              		SAVEBIN "bin/screen.bin", fons, fi_fons- fons
+875   9186
+876   9186              		SAVESNA "bin/parachute.sna", inici
+877   9186
+878   9186              		;SAVETAP "bin/parachutecode.tap",HEADLESS,inici, fi-inici
+/home/carles/Projectes/zx/parachute/parachute.asm(879): error: Unrecognized instruction: S
+879   9186              		S;AVETAP "bin/screen.tap",HEADLESS,fons, fi_fons- fons
+880   9186
+881   9186              		;DISPLAY "Code:  ", code_fi - code_inici
+882   9186              		;DISPLAY "Libs:  ", libs_fi - libs_inici
+883   9186              		;DISPLAY "Data:  ", data_fi - data_inici
+884   9186              		DISPLAY "Pantalla: ", fi_fons - fons
+885   9186              		DISPLAY "Codi: ", fi - inici
+886   9186              		DISPLAY "Total: ", (fi - inici) + (fi_fons - fons)
+887   9186
+888   9186              		;include	 libs/tap_lib.asm
+889   9186              		;MakeTape ZXSPECTRUM48, "rpsduel.tap", "walk", inici, fi-inici, inici
+890   9186
+891   9186              	else
+892   9186 ~            		run 0x8000
+893   9186              	endif
+# file closed: /home/carles/Projectes/zx/parachute/parachute.asm

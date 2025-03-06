@@ -55,7 +55,7 @@ update_time:	ld a, (hl)
 				cp 50
 				jr nz, update_time_end
 					
-	update_time_nextsecond:
+update_time_nextsecond:
 				xor a
 				ld (hl), a
 				inc hl
@@ -65,7 +65,7 @@ update_time:	ld a, (hl)
 				cp 60
 				jr nz, update_time_end
 				
-	update_time_nextminute:
+update_time_nextminute:
 				xor a
 				ld (hl), a
 				inc hl
@@ -75,7 +75,7 @@ update_time:	ld a, (hl)
 				cp 60
 				jr nz, update_time_end
 							
-	update_time_nexthour:
+update_time_nexthour:
 				xor a
 				ld (hl), a
 				inc hl
@@ -87,7 +87,7 @@ update_time:	ld a, (hl)
 				xor a
 				
 	
-		update_time_end:
+update_time_end:
 				ld (hl),a
 				ret
 				
@@ -118,7 +118,7 @@ swap_memory:
 ; returns a
 checksum8:
 				xor a
-		checksum8_loop:
+checksum8_loop:
 				add (hl)
 				inc hl
 				djnz checksum8_loop
