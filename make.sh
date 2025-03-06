@@ -30,6 +30,9 @@ EOF
 ./tools/bin2tap  bin/parachutecode.bin bin/parachutecode.tap data 32768 n
 
 cat bin/loader.tap bin/screen.tap bin/parachutecode.tap > bin/parachute.tap
+
+tap2tzx bin/parachute.tap
+
 #tape2wav bin/parachute.tap bin/parachute.wav
 
 #/home/carles/opt/rvm/2.0/RetroVirtualMachine -boot=zx48k -i bin/parachute.tap -play -c='j ""\n'
